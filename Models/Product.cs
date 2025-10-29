@@ -1,4 +1,6 @@
-﻿namespace StockManager.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace StockManager.Models
 {
     public class Product
     {
@@ -10,6 +12,7 @@
         //Clave foranea de la categoria
         public int CategoryId { get; set; }
         //Crea la relacion con la categoria (N:1), muchos productos pueden pertenecer a una categoria
+        //[Display(Name = "Categorias")]
         public Category? Category { get; set; }
     }
 }

@@ -1,4 +1,11 @@
+using Microsoft.EntityFrameworkCore;
+using StockManager.Data;
+
 var builder = WebApplication.CreateBuilder(args);
+
+//Crea la conexion a la base de datos SQLite
+builder.Services.AddDbContext<AppDbContext>(options =>
+options.UseSqlite("Data Source = StockDB.db"));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
