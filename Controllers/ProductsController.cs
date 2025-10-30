@@ -22,27 +22,80 @@ namespace StockManager.Controllers
         // GET: Products
         public async Task<IActionResult> Index()
         {
-            var appDbContext = _context.Products.Include(p => p.Category);
-            return View(await appDbContext.ToListAsync());
+            //Trae los productos con sus categorias y las categorias padres
+            var products = await _context.Products.Include(p => p.Category)
+                .ThenInclude(c => c.ParentCategory)
+                .ToListAsync();
+            //Mapea los productos a ProductViewModel incluyendo la ruta de categorias
+            var productViewModels = products.Select(p => new ProductViewModel
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Price = p.Price,
+                Stock = p.Stock,
+                MinimumStock = p.MinimumStock,
+                CategoryPath = GetCategoryPath(p.Category)
+            }).ToList();
+            return View(productViewModels);
+        }
+        //Metodo para obtener la ruta de categorias
+        private string GetCategoryPath(Category category)
+        {
+            if (category == null) return string.Empty;
+
+            var names = new List<string>();
+            var current = category;
+
+            while (current != null && current.ParentCategoryId != null)
+            {
+                names.Insert(0, current.Name);
+                //Trae explicitamente el padre desde la base de datos
+                current = _context.Categories
+                    .AsNoTracking()
+                    .FirstOrDefault(c => c.Id == current.ParentCategoryId);
+            }
+
+            return string.Join(" > ", names);
         }
 
         // GET: Products/Details/5
         public async Task<IActionResult> Details(int? id)
         {
+            //if (id == null)
+            //{
+            //    return NotFound();
+            //}
+
+            //var product = await _context.Products
+            //    .Include(p => p.Category)
+            //    .FirstOrDefaultAsync(m => m.Id == id);
+            //if (product == null)
+            //{
+            //    return NotFound();
+            //}
+
+            //return View(product);
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var product = await _context.Products
                 .Include(p => p.Category)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (product == null)
-            {
-                return NotFound();
-            }
 
-            return View(product);
+            if (product == null)
+                return NotFound();
+
+            var viewModel = new ProductViewModel
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Price = product.Price,
+                Stock = product.Stock,
+                MinimumStock = product.MinimumStock,
+                CategoryPath = GetCategoryPath(product.Category)
+            };
+
+            return View(viewModel);
         }
 
         // GET: Products/Create
@@ -82,7 +135,7 @@ namespace StockManager.Controllers
             {
                 return NotFound();
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Id", product.CategoryId);
+            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", product.CategoryId);
             return View(product);
         }
 
