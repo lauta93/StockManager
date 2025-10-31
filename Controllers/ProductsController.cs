@@ -19,95 +19,126 @@ namespace StockManager.Controllers
             _context = context;
         }
 
-        // GET: Products
-        public async Task<IActionResult> Index()
+        //Metodo para obtener todos los productos con su jerarquia de catergorias
+        private async Task<List<ProductViewModel>> GetAllProductViewModelsAsync()
         {
-            //Trae los productos con sus categorias y las categorias padres
-            var products = await _context.Products.Include(p => p.Category)
-                .ThenInclude(c => c.ParentCategory)
+            var products = await _context.Products
+                .Include(p => p.Category)
+                    .ThenInclude(c => c.ParentCategory)
                 .ToListAsync();
-            //Mapea los productos a ProductViewModel incluyendo la ruta de categorias
-            var productViewModels = products.Select(p => new ProductViewModel
+
+            return products.Select(p => new ProductViewModel
             {
                 Id = p.Id,
                 Name = p.Name,
                 Price = p.Price,
                 Stock = p.Stock,
                 MinimumStock = p.MinimumStock,
+                CategoryId = p.CategoryId,
                 CategoryPath = GetCategoryPath(p.Category)
             }).ToList();
-            return View(productViewModels);
         }
-        //Metodo para obtener la ruta de categorias
-        private string GetCategoryPath(Category category)
+        //Metodo para obtener un producto con su jerarquia de categorias
+        private async Task<ProductViewModel?> GetProductViewModelAsync(int id)
         {
-            if (category == null) return string.Empty;
-
-            var names = new List<string>();
-            var current = category;
-
-            while (current != null && current.ParentCategoryId != null)
-            {
-                names.Insert(0, current.Name);
-                //Trae explicitamente el padre desde la base de datos
-                current = _context.Categories
-                    .AsNoTracking()
-                    .FirstOrDefault(c => c.Id == current.ParentCategoryId);
-            }
-
-            return string.Join(" > ", names);
-        }
-
-        // GET: Products/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            //if (id == null)
-            //{
-            //    return NotFound();
-            //}
-
-            //var product = await _context.Products
-            //    .Include(p => p.Category)
-            //    .FirstOrDefaultAsync(m => m.Id == id);
-            //if (product == null)
-            //{
-            //    return NotFound();
-            //}
-
-            //return View(product);
-            if (id == null)
-                return NotFound();
-
             var product = await _context.Products
                 .Include(p => p.Category)
+                .ThenInclude(c => c.ParentCategory)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (product == null)
-                return NotFound();
+                return null;
 
-            var viewModel = new ProductViewModel
+            return new ProductViewModel
             {
                 Id = product.Id,
                 Name = product.Name,
                 Price = product.Price,
                 Stock = product.Stock,
                 MinimumStock = product.MinimumStock,
+                CategoryId = product.CategoryId,
                 CategoryPath = GetCategoryPath(product.Category)
             };
+        }
 
+        //Metodo para obtener la ruta de categorias
+        private string GetCategoryPath(Category category)
+        {
+            if (category == null) return string.Empty;
+            var names = new List<string>();
+            var current = category;
+            while (current != null && current.ParentCategoryId != null)
+            {
+                names.Insert(0, current.Name);                
+                current = _context.Categories
+                    .AsNoTracking()
+                    .FirstOrDefault(c => c.Id == current.ParentCategoryId);
+            }
+            return string.Join(" > ", names);
+        }
+        //Metodo para obtener la lista de categorias para un dropdown
+        private List<SelectListItem> GetCategorySelectList()
+        {
+            var categories = _context.Categories
+                .Include(c => c.ParentCategory)
+                .AsNoTracking()
+                .ToList();
+
+            var list = categories.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = GetCategoryPath(c)
+            })
+            .OrderBy(c => c.Text)
+            .ToList();
+
+            return list;
+        }
+
+        // GET: Products
+        public async Task<IActionResult> Index()
+        {            
+            var products = await GetAllProductViewModelsAsync();
+            return View(products);
+        }
+        
+
+        // GET: Products/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+                return NotFound();
+            var viewModel = await GetProductViewModelAsync(id.Value);
+            if (viewModel == null)
+                return NotFound();
             return View(viewModel);
         }
 
         // GET: Products/Create
         public IActionResult Create()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
+            //ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
+            //return View();
+            ViewData["CategoryId"] = GetCategorySelectList();
             return View();
         }
 
         // POST: Products/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Create([Bind("Id,Name,Price,Stock,MinimumStock,CategoryId")] Product product)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        _context.Add(product);
+        //        await _context.SaveChangesAsync();
+        //        return RedirectToAction(nameof(Index));
+        //    }
+        //    ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Id", product.CategoryId);
+        //    return View(product);
+        //}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,Price,Stock,MinimumStock,CategoryId")] Product product)
@@ -118,7 +149,8 @@ namespace StockManager.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Id", product.CategoryId);
+
+            ViewData["CategoryId"] = GetCategorySelectList();
             return View(product);
         }
 
@@ -126,18 +158,22 @@ namespace StockManager.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
-            var product = await _context.Products.FindAsync(id);
-            if (product == null)
-            {
+            var viewModel = await GetProductViewModelAsync(id.Value);
+            if (viewModel == null)
                 return NotFound();
-            }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", product.CategoryId);
-            return View(product);
+
+            ViewData["CategoryId"] = new SelectList(
+                GetCategorySelectList(), // reutilizamos el método
+                "Value",
+                "Text",
+                viewModel.CategoryId.ToString()
+            );
+
+            return View(viewModel);
         }
+
 
         // POST: Products/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -147,9 +183,7 @@ namespace StockManager.Controllers
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price,Stock,MinimumStock,CategoryId")] Product product)
         {
             if (id != product.Id)
-            {
                 return NotFound();
-            }
 
             if (ModelState.IsValid)
             {
@@ -161,17 +195,14 @@ namespace StockManager.Controllers
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!ProductExists(product.Id))
-                    {
                         return NotFound();
-                    }
                     else
-                    {
                         throw;
-                    }
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Id", product.CategoryId);
+
+            ViewData["CategoryId"] = GetCategorySelectList();
             return View(product);
         }
 
@@ -179,19 +210,13 @@ namespace StockManager.Controllers
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
-            var product = await _context.Products
-                .Include(p => p.Category)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (product == null)
-            {
+            var viewModel = await GetProductViewModelAsync(id.Value);
+            if (viewModel == null)
                 return NotFound();
-            }
 
-            return View(product);
+            return View(viewModel);
         }
 
         // POST: Products/Delete/5
@@ -203,9 +228,9 @@ namespace StockManager.Controllers
             if (product != null)
             {
                 _context.Products.Remove(product);
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
