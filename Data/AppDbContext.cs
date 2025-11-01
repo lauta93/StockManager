@@ -10,6 +10,7 @@ namespace StockManager.Data
         //se declaran las tablas
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<StockMovement> StockMovements { get; set; }
 
         // Restricciones y configuraciones adicionales para EF Core
         protected override void OnModelCreating(ModelBuilder modelBuilder)

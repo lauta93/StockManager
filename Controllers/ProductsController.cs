@@ -25,7 +25,7 @@ namespace StockManager.Controllers
             
             var products = await _context.Products
                 .Include(p => p.Category)
-                    .ThenInclude(c => c.ParentCategory)
+                .Include(p => p.StockMovements)
                 .ToListAsync();
 
             return products.Select(p => new ProductViewModel
@@ -33,7 +33,7 @@ namespace StockManager.Controllers
                 Id = p.Id,
                 Name = p.Name,
                 Price = p.Price,
-                Stock = p.Stock,
+                CurrentStock = p.StockMovements.Sum(m => m.Quantity),//No carga en memoria el current, lo calcula aqui
                 MinimumStock = p.MinimumStock,
                 CategoryId = p.CategoryId,
                 CategoryPath = GetCategoryPath(p.Category)
@@ -55,7 +55,7 @@ namespace StockManager.Controllers
                 Id = product.Id,
                 Name = product.Name,
                 Price = product.Price,
-                Stock = product.Stock,
+                CurrentStock = product.CurrentStock,
                 MinimumStock = product.MinimumStock,
                 CategoryId = product.CategoryId,
                 CategoryPath = GetCategoryPath(product.Category)

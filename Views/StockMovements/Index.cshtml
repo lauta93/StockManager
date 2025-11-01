@@ -1,0 +1,27 @@
+﻿<thead>
+    <tr>
+        <th>Nombre</th>
+        <th>Precio</th>
+        <th>Categoría</th>
+        <th>Stock actual</th>
+        <th></th>
+    </tr>
+</thead>
+<tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@item.Price</td>
+            <td>@item.Category?.Name</td>
+            <td>@item.CurrentStock</td>
+            <td>
+                <a asp-controller="StockMovements" asp-action="Create" asp-route-productId="@item.Id" class="btn btn-sm btn-outline-primary">
+                    + / -
+                </a>
+                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Editar</a>
+                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Eliminar</a>
+            </td>
+        </tr>
+    }
+</tbody>

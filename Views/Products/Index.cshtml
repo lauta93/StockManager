@@ -15,7 +15,7 @@
         <tr>
             <th>@Html.DisplayNameFor(model => model.Name)</th>
             <th>@Html.DisplayNameFor(model => model.Price)</th>
-            <th>@Html.DisplayNameFor(model => model.Stock)</th>
+            <th>@Html.DisplayNameFor(model => model.CurrentStock)</th>
             <th>@Html.DisplayNameFor(model => model.MinimumStock)</th>
             <th>Categorías</th>
             <th></th>
@@ -27,10 +27,13 @@
             <tr>
                 <td>@Html.DisplayFor(modelItem => item.Name)</td>
                 <td>@Html.DisplayFor(modelItem => item.Price)</td>
-                <td>@Html.DisplayFor(modelItem => item.Stock)</td>
+                <td>@Html.DisplayFor(modelItem => item.CurrentStock)</td>
                 <td>@Html.DisplayFor(modelItem => item.MinimumStock)</td>
                 <td>@item.CategoryPath</td>
                 <td>
+                    <a asp-controller="StockMovements" asp-action="Create" asp-route-productId="@item.Id" class="btn btn-sm btn-outline-primary">
+                        + / -
+                    </a>
                     <a asp-action="Edit" asp-route-id="@item.Id">Editar</a> |
                     <a asp-action="Details" asp-route-id="@item.Id">Detalles</a> |
                     <a asp-action="Delete" asp-route-id="@item.Id">Eliminar</a>
