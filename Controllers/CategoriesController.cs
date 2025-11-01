@@ -18,37 +18,90 @@ namespace StockManager.Controllers
         {
             _context = context;
         }
+        //Metodo que devuelve la ruta completa de una categoria
+        private string GetCategoryPath(Category category)
+        {
+            var names = new List<string>();
+            var current = category;
+
+            while (current != null)
+            {
+                names.Insert(0, current.Name);
+                current = current.ParentCategory;
+            }
+            if (names.Count > 1)
+                names.RemoveAt(0); //Quita la raiz (Producto)
+            return string.Join(" > ", names);
+        }
+        //Metodo para llenar el selectlist de categorias con su ruta completa
+        private async Task PopulateParentCategoriesDropdown(int? selectedId = null)
+        {
+            var categories = await _context.Categories
+                .Include(c => c.ParentCategory)
+                .ToListAsync();
+
+            var categoryPaths = categories.Select(c => new
+            {
+                Id = c.Id,
+                Path = GetCategoryPath(c)
+            })
+            .OrderBy(c => c.Path)
+            .ToList();
+
+            ViewData["ParentCategoryId"] = new SelectList(categoryPaths, "Id", "Path", selectedId);
+        }
+        //Metodo para cargar la jerarquia de una categoria recursivamente
+        private async Task<Category?> LoadFullCategoryHierarchyAsync(Category category)
+        {
+            var current = category;
+            while (current.ParentCategoryId != null)
+            {
+                current.ParentCategory = await _context.Categories
+                    .FirstOrDefaultAsync(c => c.Id == current.ParentCategoryId);
+                current = current.ParentCategory!;
+            }
+            return category;
+        }
 
         // GET: Categories
         public async Task<IActionResult> Index()
         {
-            var appDbContext = _context.Categories.Include(c => c.ParentCategory);
-            return View(await appDbContext.ToListAsync());
+            var categories = await _context.Categories
+        .Include(c => c.ParentCategory)
+        .ToListAsync();
+            
+              var categoryPaths = categories.ToDictionary(
+                 c => c.Id,
+                 c => GetCategoryPath(c)
+              );
+
+            ViewBag.CategoryPaths = categoryPaths;
+            return View(categories);
         }
 
         // GET: Categories/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var category = await _context.Categories
-                .Include(c => c.ParentCategory)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (category == null)
-            {
-                return NotFound();
-            }
 
+            if (category == null)
+                return NotFound();
+
+            // Carga toda la jerarquía antes de calcular el path
+            await LoadFullCategoryHierarchyAsync(category);
+
+            ViewBag.CategoryPath = GetCategoryPath(category);
             return View(category);
         }
 
         // GET: Categories/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["ParentCategoryId"] = new SelectList(_context.Categories, "Id", "Name");
+            await PopulateParentCategoriesDropdown();
             return View();
         }
 
@@ -65,9 +118,8 @@ namespace StockManager.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            //Se modifico para mostrar el nombre en lugar del id
-            ViewData["ParentCategoryId"] = new SelectList(_context.Categories, "Id", "Name", category.ParentCategoryId);
-            //ViewBag.ParentCategoryId = new SelectList(_context.Categories, "Id", "Name");
+
+            await PopulateParentCategoriesDropdown(category.ParentCategoryId);
             return View(category);
         }
 
@@ -75,16 +127,13 @@ namespace StockManager.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var category = await _context.Categories.FindAsync(id);
             if (category == null)
-            {
                 return NotFound();
-            }
-            ViewData["ParentCategoryId"] = new SelectList(_context.Categories, "Id", "Id", category.ParentCategoryId);
+
+            await PopulateParentCategoriesDropdown(category.ParentCategoryId);
             return View(category);
         }
 
@@ -128,18 +177,18 @@ namespace StockManager.Controllers
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var category = await _context.Categories
-                .Include(c => c.ParentCategory)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (category == null)
-            {
-                return NotFound();
-            }
 
+            if (category == null)
+                return NotFound();
+
+            // Carga jerarquía completa
+            await LoadFullCategoryHierarchyAsync(category);
+
+            ViewBag.CategoryPath = GetCategoryPath(category);
             return View(category);
         }
 

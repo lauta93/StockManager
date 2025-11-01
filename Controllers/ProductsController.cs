@@ -22,6 +22,7 @@ namespace StockManager.Controllers
         //Metodo para obtener todos los productos con su jerarquia de catergorias
         private async Task<List<ProductViewModel>> GetAllProductViewModelsAsync()
         {
+            
             var products = await _context.Products
                 .Include(p => p.Category)
                     .ThenInclude(c => c.ParentCategory)
@@ -40,7 +41,7 @@ namespace StockManager.Controllers
         }
         //Metodo para obtener un producto con su jerarquia de categorias
         private async Task<ProductViewModel?> GetProductViewModelAsync(int id)
-        {
+        {            
             var product = await _context.Products
                 .Include(p => p.Category)
                 .ThenInclude(c => c.ParentCategory)
@@ -91,7 +92,6 @@ namespace StockManager.Controllers
             })
             .OrderBy(c => c.Text)
             .ToList();
-
             return list;
         }
 
@@ -116,29 +116,12 @@ namespace StockManager.Controllers
 
         // GET: Products/Create
         public IActionResult Create()
-        {
-            //ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
-            //return View();
+        {            
             ViewData["CategoryId"] = GetCategorySelectList();
             return View();
         }
 
         // POST: Products/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Create([Bind("Id,Name,Price,Stock,MinimumStock,CategoryId")] Product product)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        _context.Add(product);
-        //        await _context.SaveChangesAsync();
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Id", product.CategoryId);
-        //    return View(product);
-        //}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,Price,Stock,MinimumStock,CategoryId")] Product product)
