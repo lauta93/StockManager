@@ -14,7 +14,7 @@ namespace StockManager.Services
             _context = context;
         }
 
-        // Devuelve la jerarquía completa (asincrónica)
+        // Devuelve la jerarquía completa en string
         public async Task<string> GetCategoryPathAsync(Category? category)
         {
             if (category == null)
@@ -100,7 +100,7 @@ namespace StockManager.Services
         }
 
         // Devuelve la lista de categorías jerárquicas para dropdowns
-        public async Task<List<SelectListItem>> GetCategorySelectListAsync()
+        public async Task<List<SelectListItem>> GetCategorySelectListAsync(int? selectedId = null)
         {
             var categories = await _context.Categories
                 .Include(c => c.ParentCategory)
@@ -116,11 +116,25 @@ namespace StockManager.Services
                 list.Add(new SelectListItem
                 {
                     Value = c.Id.ToString(),
-                    Text = path
+                    Text = path,
+                    Selected = (selectedId.HasValue && c.Id == selectedId.Value)
                 });
             }
 
             return list.OrderBy(c => c.Text).ToList();
         }
+        //Metodo para cargar la jerarquia de una categoria recursivamente
+        public async Task<Category?> LoadFullCategoryHierarchyAsync(Category category)
+        {
+            var current = category;
+            while (current.ParentCategoryId != null)
+            {
+                current.ParentCategory = await _context.Categories
+                    .FirstOrDefaultAsync(c => c.Id == current.ParentCategoryId);
+                current = current.ParentCategory!;
+            }
+            return category;
+        }
+
     }
 }

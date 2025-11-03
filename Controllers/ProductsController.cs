@@ -75,7 +75,7 @@ namespace StockManager.Controllers
                 return NotFound();
 
             ViewData["CategoryId"] = new SelectList(
-                await _categoryService.GetCategorySelectListAsync(), // reutilizamos el método
+                await _categoryService.GetCategorySelectListAsync(),
                 "Value",
                 "Text",
                 viewModel.CategoryId.ToString()
