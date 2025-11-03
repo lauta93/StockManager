@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using StockManager.Data;
+using StockManager.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,9 @@ options.UseSqlite("Data Source = StockDB.db"));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+//Add CategoryService
+builder.Services.AddScoped<CategoryService>();//Addscoped para optimizar el rendimiento, se crea al inicio de la solicitud y se destruye al finalizarla.
 
 var app = builder.Build();
 

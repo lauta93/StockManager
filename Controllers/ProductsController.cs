@@ -1,104 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using StockManager.Data;
 using StockManager.Models;
+using StockManager.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace StockManager.Controllers
 {
     public class ProductsController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly CategoryService _categoryService;//Inyecta el CategoryService
 
-        public ProductsController(AppDbContext context)
+        public ProductsController(AppDbContext context, CategoryService categoryService)
         {
             _context = context;
-        }
-
-        //Metodo para obtener todos los productos con su jerarquia de catergorias
-        private async Task<List<ProductViewModel>> GetAllProductViewModelsAsync()
-        {
-            
-            var products = await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.StockMovements)
-                .ToListAsync();
-
-            return products.Select(p => new ProductViewModel
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Price = p.Price,
-                CurrentStock = p.StockMovements.Sum(m => m.Quantity),//No carga en memoria el current, lo calcula aqui
-                MinimumStock = p.MinimumStock,
-                CategoryId = p.CategoryId,
-                CategoryPath = GetCategoryPath(p.Category)
-            }).ToList();
-        }
-        //Metodo para obtener un producto con su jerarquia de categorias
-        private async Task<ProductViewModel?> GetProductViewModelAsync(int id)
-        {            
-            var product = await _context.Products
-                .Include(p => p.Category)
-                .ThenInclude(c => c.ParentCategory)
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (product == null)
-                return null;
-
-            return new ProductViewModel
-            {
-                Id = product.Id,
-                Name = product.Name,
-                Price = product.Price,
-                CurrentStock = product.CurrentStock,
-                MinimumStock = product.MinimumStock,
-                CategoryId = product.CategoryId,
-                CategoryPath = GetCategoryPath(product.Category)
-            };
-        }
-
-        //Metodo para obtener la ruta de categorias
-        private string GetCategoryPath(Category category)
-        {
-            if (category == null) return string.Empty;
-            var names = new List<string>();
-            var current = category;
-            while (current != null && current.ParentCategoryId != null)
-            {
-                names.Insert(0, current.Name);                
-                current = _context.Categories
-                    .AsNoTracking()
-                    .FirstOrDefault(c => c.Id == current.ParentCategoryId);
-            }
-            return string.Join(" > ", names);
-        }
-        //Metodo para obtener la lista de categorias para un dropdown
-        private List<SelectListItem> GetCategorySelectList()
-        {
-            var categories = _context.Categories
-                .Include(c => c.ParentCategory)
-                .AsNoTracking()
-                .ToList();
-
-            var list = categories.Select(c => new SelectListItem
-            {
-                Value = c.Id.ToString(),
-                Text = GetCategoryPath(c)
-            })
-            .OrderBy(c => c.Text)
-            .ToList();
-            return list;
-        }
+            _categoryService = categoryService;
+        }        
 
         // GET: Products
         public async Task<IActionResult> Index()
         {            
-            var products = await GetAllProductViewModelsAsync();
+            var products = await _categoryService.GetAllProductViewModelsAsync();
             return View(products);
         }
         
@@ -108,7 +35,7 @@ namespace StockManager.Controllers
         {
             if (id == null)
                 return NotFound();
-            var viewModel = await GetProductViewModelAsync(id.Value);
+            var viewModel = await _categoryService.GetProductViewModelAsync(id.Value);
             if (viewModel == null)
                 return NotFound();
             return View(viewModel);
@@ -117,7 +44,7 @@ namespace StockManager.Controllers
         // GET: Products/Create
         public IActionResult Create()
         {            
-            ViewData["CategoryId"] = GetCategorySelectList();
+            ViewData["CategoryId"] = _categoryService.GetCategorySelectListAsync();
             return View();
         }
 
@@ -133,7 +60,7 @@ namespace StockManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["CategoryId"] = GetCategorySelectList();
+            ViewData["CategoryId"] = _categoryService.GetCategorySelectListAsync();
             return View(product);
         }
 
@@ -143,12 +70,12 @@ namespace StockManager.Controllers
             if (id == null)
                 return NotFound();
 
-            var viewModel = await GetProductViewModelAsync(id.Value);
+            var viewModel = await _categoryService.GetProductViewModelAsync(id.Value);
             if (viewModel == null)
                 return NotFound();
 
             ViewData["CategoryId"] = new SelectList(
-                GetCategorySelectList(), // reutilizamos el método
+                await _categoryService.GetCategorySelectListAsync(), // reutilizamos el método
                 "Value",
                 "Text",
                 viewModel.CategoryId.ToString()
@@ -185,7 +112,7 @@ namespace StockManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["CategoryId"] = GetCategorySelectList();
+            ViewData["CategoryId"] = _categoryService.GetCategorySelectListAsync();
             return View(product);
         }
 
@@ -195,7 +122,7 @@ namespace StockManager.Controllers
             if (id == null)
                 return NotFound();
 
-            var viewModel = await GetProductViewModelAsync(id.Value);
+            var viewModel = await _categoryService.GetProductViewModelAsync(id.Value);
             if (viewModel == null)
                 return NotFound();
 
