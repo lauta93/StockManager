@@ -11,47 +11,40 @@ public class StockMovementsController : Controller
     private readonly StockMovementService _stockMovementService;
     private readonly AppDbContext _context;
     private readonly CategoryService _categoryService;
-
-
-    public StockMovementsController(StockMovementService stockMovementService, AppDbContext context, CategoryService categoryService)
+    private readonly CategoryPathService _categoryPathService;
+    public StockMovementsController( AppDbContext context, CategoryService categoryService,
+        CategoryPathService categoryPathService, StockMovementService stockMovementService)
     {
-        _stockMovementService = stockMovementService;
         _context = context;
         _categoryService = categoryService;
+        _categoryPathService = categoryPathService;
+        _stockMovementService = stockMovementService;
     }
-
     public async Task<IActionResult> Index(int? productId, DateTime? from, DateTime? to)
     {
         ViewBag.Products = await _stockMovementService.GetProductSelectListAsync();
         ViewBag.From = from?.ToString("yyyy-MM-dd");
         ViewBag.To = to?.ToString("yyyy-MM-dd");
-
         var movements = await _stockMovementService.GetStockMovementsAsync(productId, from, to);
         return View(movements);
     }
-
     // GET: StockMovements/Create
     public async Task<IActionResult> Create(int productId)
     {
         var product = await _context.Products
-            .Include(p => p.Category)
-            .ThenInclude(c => c.ParentCategory)
-            .FirstOrDefaultAsync(p => p.Id == productId);
-
+       .Include(p => p.Category)
+       .FirstOrDefaultAsync(p => p.Id == productId);
         if (product == null)
             return NotFound();
-
-        ViewBag.ProductFullName = await _categoryService.GetProductFullName(product);
-
+        // Crear un ViewModel como en el Index
+        ViewBag.ProductFullName = await _categoryService.GetProductFullName(productId);
         var movement = new StockMovement
         {
             ProductId = productId,
             Product = product
         };
-
         return View(movement);
     }
-
     // POST: /StockMovements/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -59,7 +52,6 @@ public class StockMovementsController : Controller
     {
         if (!ModelState.IsValid)
             return View(model);
-
         await _stockMovementService.AddStockMovementAsync(model);
         return RedirectToAction("Index", "Products");
     }

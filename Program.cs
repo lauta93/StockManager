@@ -11,10 +11,9 @@ options.UseSqlite("Data Source = StockDB.db"));
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-//Add CategoryService
-builder.Services.AddScoped<CategoryService>();//Addscoped para optimizar el rendimiento, se crea al inicio de la solicitud y se destruye al finalizarla.
-
-//Add StockMovementService
+//Add servicios personalizados en orden de dependencia
+builder.Services.AddScoped<CategoryPathService>();
+builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<StockMovementService>();
 
 var app = builder.Build();

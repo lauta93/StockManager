@@ -7,24 +7,22 @@ using StockManager.ViewModels;
 public class StockMovementService
 {
     private readonly AppDbContext _context;
-    private readonly CategoryService _categoryService;
+    private readonly CategoryPathService _categoryPathService;
 
-    public StockMovementService(AppDbContext context, CategoryService categoryService)
+    public StockMovementService(AppDbContext context, CategoryPathService categoryPathService)
     {
         _context = context;
-        _categoryService = categoryService;
+        _categoryPathService = categoryPathService;
     }
     //Metodo para obtener el ViewModel para la vista create
     public async Task<StockMovement?> GetCreateViewModelAsync(int productId)
     {
         var product = await _context.Products.FindAsync(productId);
         if (product == null) return null;
-
         var movement = new StockMovement
         {
             ProductId = product.Id
-        };      
-
+        };
         return movement;
     }
     //Metodo para agregar un movimiento de stock
@@ -50,33 +48,26 @@ public class StockMovementService
     public async Task<List<StockMovementViewModel>> GetStockMovementsAsync(
            int? productId = null,
            DateTime? from = null,
-           DateTime? to = null)
-    {
+           DateTime? to = null)    {
         var query = _context.StockMovements
             .Include(m => m.Product)
-            .ThenInclude(p => p.Category)
             .AsQueryable();
-
         // Filtrado
         if (productId.HasValue)
             query = query.Where(m => m.ProductId == productId.Value);
-
         if (from.HasValue)
             query = query.Where(m => m.Date >= from.Value);
-
         if (to.HasValue)
             query = query.Where(m => m.Date <= to.Value);
-
         var movements = await query
             .OrderByDescending(m => m.Date)
             .ToListAsync();
-
         var result = new List<StockMovementViewModel>();
-
         foreach (var m in movements)
         {
-            var path = await _categoryService.GetCategoryPathAsync(m.Product?.Category);
-
+            var path = m.Product?.CategoryId != null ?
+                await _categoryPathService.GetCategoryPathAsync(await _context.Categories.FindAsync(m.Product.CategoryId))
+                : string.Empty;
             result.Add(new StockMovementViewModel
             {
                 Id = m.Id,
@@ -87,10 +78,6 @@ public class StockMovementService
                 Note = m.Note
             });
         }
-
         return result;
     }
-    
-
-
 }
