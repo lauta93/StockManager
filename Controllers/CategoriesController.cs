@@ -34,8 +34,13 @@ namespace StockManager.Controllers
             var categoryPaths = new Dictionary<int, string>();
             foreach (var c in categories)
             {
-                //Forza que GetCategoryPathAsync cargue la jerarquia completa desde BD
-                categoryPaths[c.Id] = await _categoryPathService.GetCategoryPathAsync(c);
+                //Fuerza que GetCategoryPathAsync cargue la jerarquia completa desde BD,
+                //mejorado para evitar consultas multiples
+                var categoryIds = categories.Select(c => c.Id).ToList();
+                foreach (var id in categoryIds)
+                {
+                    categoryPaths[id] = await _categoryPathService.GetCategoryPathAsync(id);
+                }
             }
             ViewBag.CategoryPaths = categoryPaths;
             return View(categories);

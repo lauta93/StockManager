@@ -13,15 +13,19 @@ namespace StockManager.Services
             _context = context;
         }
         //Metodo principal para obtener la ruta completa de categorias
-        public async Task<string> GetCategoryPathAsync(Category? category)
+        public async Task<string> GetCategoryPathAsync(int categoryId)
         {
-            if (category == null)
-                return string.Empty;
-            // SIEMPRE cargar la categoría fresca desde la BD
-            var fullCategory = await LoadFullHierarchyFromDatabaseByIdAsync(category.Id);
+            if (categoryId <= 0) return string.Empty;
+            var fullCategory = await LoadFullHierarchyFromDatabaseByIdAsync(categoryId);
             return BuildCategoryPathString(fullCategory);
         }
-        //Metodo que devuelve la jerarquia completa de una categoria en particular
+        //Sobrecarga del metodo principal para recibir como paramatro un obj tipo Category
+        public async Task<string> GetCategoryPathAsync(Category? category)
+        {
+            if (category == null) return string.Empty;
+            return await GetCategoryPathAsync(category.Id);
+        }
+        //Metodo que devuelve la jerarquia completa de una categoria en particular en una Category
         private async Task<Category> LoadFullHierarchyFromDatabaseByIdAsync(int categoryId)
         {
             //carga la categoría específica
@@ -29,10 +33,11 @@ namespace StockManager.Services
                 .FirstOrDefaultAsync(c => c.Id == categoryId);
             if (category == null)
                 return null;
-            //carga recursivamente TODOS los padres
+            //Carga en memoria recursivamente las cat padre
             await LoadParentRecursivelyAsync(category);
             return category;
         }
+        //Metodo que carga recursivamente las categorias padre dentro de un obj Category
         private async Task LoadParentRecursivelyAsync(Category category)
         {
             if (category.ParentCategoryId.HasValue && category.ParentCategory == null)

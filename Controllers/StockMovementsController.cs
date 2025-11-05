@@ -31,10 +31,9 @@ public class StockMovementsController : Controller
     // GET: StockMovements/Create
     public async Task<IActionResult> Create(int productId)
     {
-        var product = await _context.Products
-       .Include(p => p.Category)
-       .FirstOrDefaultAsync(p => p.Id == productId);
-        if (product == null)
+        var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == productId);
+        ViewBag.ProductFullName = await _categoryService.GetProductFullName(product);
+          if (product == null) 
             return NotFound();
         // Crear un ViewModel como en el Index
         ViewBag.ProductFullName = await _categoryService.GetProductFullName(productId);

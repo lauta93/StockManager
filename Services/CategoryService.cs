@@ -14,94 +14,76 @@ namespace StockManager.Services
         {
             _context = context;
             _categoryPathService = categoryPathService;
-        }       
-        //Metodo que devuelve una lista de productos con su jerarquia de categorias para vistas de listado
-        public async Task<List<ProductViewModel>> GetAllProductViewModelsAsync()
-        {
-            var products = await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.StockMovements)
-                .ToListAsync();
-            var result = new List<ProductViewModel>();
-            foreach (var p in products)
-            {
-                var path = await _categoryPathService.GetCategoryPathAsync(p.Category);
-                result.Add(new ProductViewModel
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Price = p.Price,
-                    CurrentStock = p.StockMovements.Sum(m => m.Quantity),
-                    MinimumStock = p.MinimumStock,
-                    CategoryId = p.CategoryId,
-                    CategoryPath = path
-                });
-            }
-            return result;
         }
-        //Retorna un solo prducto con su jerarquia de categorias para vistas de detalle
-        public async Task<ProductViewModel?> GetProductViewModelAsync(int id)
+        //Helper para llenar un viewmodel con su jerarquia de categorias
+        private async Task<ProductViewModel> CreateProductViewModelAsync(Product product)
         {
-            var product = await _context.Products
-                .Include(p => p.Category) //Solo incluye la categoría directa
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (product == null)
-                return null;
-            // GetCategoryPathAsync se encarga de cargar recursivamente los padres
-            var path = await _categoryPathService.GetCategoryPathAsync(product.Category);
+            var path = await _categoryPathService.GetCategoryPathAsync(product.CategoryId);
             return new ProductViewModel
             {
                 Id = product.Id,
                 Name = product.Name,
                 Price = product.Price,
-                CurrentStock = product.CurrentStock,
+                CurrentStock = product.StockMovements?.Sum(m => m.Quantity) ?? 0,
                 MinimumStock = product.MinimumStock,
                 CategoryId = product.CategoryId,
                 CategoryPath = path
             };
         }
-        //Metodo para devolver la lista de categorías jerarquicas para dropdowns
+        //Metodo que devuelve una lista de viewmodels con su jerarquia de categorias
+        public async Task<List<ProductViewModel>> GetAllProductViewModelsAsync()
+        {
+            var products = await _context.Products
+                .Include(p => p.StockMovements)
+                .ToListAsync();
+            var result = new List<ProductViewModel>();
+            foreach (var product in products)
+            {
+                result.Add(await CreateProductViewModelAsync(product));
+            }
+            return result;
+        }
+        //Metodo que devuelve un viewmodel de un producto en particular con su jerarquia
+        public async Task<ProductViewModel?> GetProductViewModelAsync(int id)
+        {
+            var product = await _context.Products
+                .Include(p => p.StockMovements)
+                .FirstOrDefaultAsync(p => p.Id == id);
+            return product != null ? await CreateProductViewModelAsync(product) : null;
+        }
+        //Metodo para devolver la lista de categorias jerarquicas para dropdowns
         public async Task<List<SelectListItem>> GetCategorySelectListAsync(int? selectedId = null)
         {
-            //Solo cargar las categorias basicas
             var categories = await _context.Categories
                 .AsNoTracking()
                 .ToListAsync();
             var list = new List<SelectListItem>();
-            foreach (var c in categories)
+            foreach (var category in categories)
             {
-                // GetCategoryPathAsync se encarga de cargar la jerarquia completa recursivamente
-                var path = await _categoryPathService.GetCategoryPathAsync(c);
+                var path = await _categoryPathService.GetCategoryPathAsync(category.Id);
                 list.Add(new SelectListItem
                 {
-                    Value = c.Id.ToString(),
+                    Value = category.Id.ToString(),
                     Text = path,
-                    Selected = (selectedId.HasValue && c.Id == selectedId.Value)
+                    Selected = (selectedId.HasValue && category.Id == selectedId.Value)
                 });
             }
             return list.OrderBy(c => c.Text).ToList();
         }
-        //Retorna un string con el nombre del producto y su jerarquia de categorias completa
+        //Metodo para obtener un string con el nombre del producto + jerarquia
         public async Task<string> GetProductFullName(Product product)
         {
-            if (product == null)
-                return string.Empty;
-            var path = await _categoryPathService.GetCategoryPathAsync(product.Category);
-            return string.IsNullOrEmpty(path)
-                ? product.Name
-                : $"{product.Name} ({path})";
+            if (product == null) return string.Empty;
+            var path = await _categoryPathService.GetCategoryPathAsync(product.CategoryId);
+            return string.IsNullOrEmpty(path) ? product.Name : $"{product.Name} ({path})";
         }
-        //Sobrecarga para obtener el nombre completo del producto por su Id
+        //Sobrecarga del metodo anterior pero recibiendo el id
         public async Task<string> GetProductFullName(int productId)
         {
             var product = await _context.Products
                 .FirstOrDefaultAsync(p => p.Id == productId);
-            if (product == null)
-                return string.Empty;
-            var path = await _categoryPathService.GetCategoryPathAsync(new Category { Id = product.CategoryId });
-            return string.IsNullOrEmpty(path)
-                ? product.Name
-                : $"{product.Name} ({path})";
+            if (product == null) return string.Empty;
+            return await GetProductFullName(product);
         }
     }
 }

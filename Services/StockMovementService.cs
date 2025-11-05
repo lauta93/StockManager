@@ -66,8 +66,8 @@ public class StockMovementService
         foreach (var m in movements)
         {
             var path = m.Product?.CategoryId != null ?
-                await _categoryPathService.GetCategoryPathAsync(await _context.Categories.FindAsync(m.Product.CategoryId))
-                : string.Empty;
+             await _categoryPathService.GetCategoryPathAsync(m.Product.CategoryId)
+    :        string.Empty;
             result.Add(new StockMovementViewModel
             {
                 Id = m.Id,
