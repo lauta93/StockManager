@@ -31,17 +31,11 @@ namespace StockManager.Controllers
             var categories = await _context.Categories
                 .AsNoTracking()
                 .ToListAsync();
-            var categoryPaths = new Dictionary<int, string>();
-            foreach (var c in categories)
-            {
-                //Fuerza que GetCategoryPathAsync cargue la jerarquia completa desde BD,
-                //mejorado para evitar consultas multiples
-                var categoryIds = categories.Select(c => c.Id).ToList();
-                foreach (var id in categoryIds)
-                {
-                    categoryPaths[id] = await _categoryPathService.GetCategoryPathAsync(id);
-                }
-            }
+            var categorySelectList = await _categoryService.GetCategorySelectListAsync();
+            var categoryPaths = categorySelectList.ToDictionary(
+                item => int.Parse(item.Value),
+                item => item.Text
+            );
             ViewBag.CategoryPaths = categoryPaths;
             return View(categories);
         }

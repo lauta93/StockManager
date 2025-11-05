@@ -8,16 +8,15 @@ using System.Threading.Tasks;
 
 public class StockMovementsController : Controller
 {
-    private readonly StockMovementService _stockMovementService;
     private readonly AppDbContext _context;
     private readonly CategoryService _categoryService;
-    private readonly CategoryPathService _categoryPathService;
+    private readonly StockMovementService _stockMovementService;    
+    
     public StockMovementsController( AppDbContext context, CategoryService categoryService,
-        CategoryPathService categoryPathService, StockMovementService stockMovementService)
+        StockMovementService stockMovementService)
     {
         _context = context;
         _categoryService = categoryService;
-        _categoryPathService = categoryPathService;
         _stockMovementService = stockMovementService;
     }
     public async Task<IActionResult> Index(int? productId, DateTime? from, DateTime? to)
@@ -32,11 +31,10 @@ public class StockMovementsController : Controller
     public async Task<IActionResult> Create(int productId)
     {
         var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == productId);
-        ViewBag.ProductFullName = await _categoryService.GetProductFullName(product);
-          if (product == null) 
+        if (product == null)
             return NotFound();
-        // Crear un ViewModel como en el Index
-        ViewBag.ProductFullName = await _categoryService.GetProductFullName(productId);
+        //Una sola llamada al service
+        ViewBag.ProductFullName = await _categoryService.GetProductFullName(product);
         var movement = new StockMovement
         {
             ProductId = productId,

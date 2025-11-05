@@ -65,12 +65,7 @@ namespace StockManager.Controllers
             var viewModel = await _categoryService.GetProductViewModelAsync(id.Value);
             if (viewModel == null)
                 return NotFound();
-            ViewData["CategoryId"] = new SelectList(
-                await _categoryService.GetCategorySelectListAsync(),
-                "Value",
-                "Text",
-                viewModel.CategoryId.ToString()
-            );
+            ViewData["CategoryId"] = await _categoryService.GetCategorySelectListAsync(viewModel.CategoryId); 
             return View(viewModel);
         }
         // POST: Products/Edit/5
