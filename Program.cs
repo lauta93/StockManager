@@ -14,6 +14,9 @@ builder.Services.AddControllersWithViews();
 //Add CategoryService
 builder.Services.AddScoped<CategoryService>();//Addscoped para optimizar el rendimiento, se crea al inicio de la solicitud y se destruye al finalizarla.
 
+//Add StockMovementService
+builder.Services.AddScoped<StockMovementService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

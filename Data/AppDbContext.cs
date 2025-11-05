@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StockManager.Models;
+using StockManager.ViewModels;
 namespace StockManager.Data
 {
     public class AppDbContext : DbContext

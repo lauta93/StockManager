@@ -1,4 +1,4 @@
-﻿namespace StockManager.Models
+﻿namespace StockManager.ViewModels
 {
     using System.ComponentModel.DataAnnotations;
     public class Category

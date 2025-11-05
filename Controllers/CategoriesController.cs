@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using StockManager.Data;
-using StockManager.Models;
+using StockManager.ViewModels;
 using StockManager.Services;
 
 namespace StockManager.Controllers
@@ -20,8 +20,7 @@ namespace StockManager.Controllers
         {
             _context = context;
             _categoryService = categoryService;
-        }      
-        
+        }       
         
         // GET: Categories
         public async Task<IActionResult> Index()

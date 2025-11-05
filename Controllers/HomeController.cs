@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using StockManager.Models;
+using StockManager.ViewModels;
 
 namespace StockManager.Controllers
 {

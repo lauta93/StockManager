@@ -1,1 +1,63 @@
-﻿
+﻿@using StockManager.ViewModels
+@model IEnumerable<StockMovementViewModel>
+
+@{
+    ViewData["Title"] = "Movimientos de Stock";
+}
+
+<h2 class="mb-4">@ViewData["Title"]</h2>
+
+<form method="get" class="row mb-4 g-3 align-items-end">
+    <div class="col-md-4">
+        <label class="form-label">Producto</label>
+        <select name="productId" class="form-select">
+            <option value="">-- Todos --</option>
+            @foreach (var p in (List<SelectListItem>)ViewBag.Products)
+            {
+                <option value="@p.Value" selected="@(Context.Request.Query["productId"] == p.Value ? "selected" : null)">
+                    @p.Text
+                </option>
+            }
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Desde</label>
+        <input type="date" name="from" class="form-control" value="@ViewBag.From" />
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Hasta</label>
+        <input type="date" name="to" class="form-control" value="@ViewBag.To" />
+    </div>
+
+    <div class="col-md-2 d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+    </div>
+</form>
+
+<table class="table table-hover align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Fecha</th>
+            <th>Producto</th>
+            <th>Categoría</th>
+            <th class="text-center">Cantidad</th>
+            <th>Nota</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            var quantityClass = item.Quantity > 0 ? "text-success fw-bold" : "text-danger fw-bold";
+            var sign = item.Quantity > 0 ? "+" : "";
+            <tr>
+                <td>@item.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@item.ProductName</td>
+                <td class="text-muted">@item.CategoryPath</td>
+                <td class="text-center @quantityClass">@sign@item.Quantity</td>
+                <td>@item.Note</td>
+            </tr>
+        }
+    </tbody>
+</table>

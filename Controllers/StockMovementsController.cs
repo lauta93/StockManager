@@ -2,56 +2,65 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using StockManager.Data;
-using StockManager.Models;
+using StockManager.ViewModels;
+using StockManager.Services; 
+using System.Threading.Tasks;
 
-namespace StockManager.Controllers
+public class StockMovementsController : Controller
 {
-    public class StockMovementsController : Controller
+    private readonly StockMovementService _stockMovementService;
+    private readonly AppDbContext _context;
+    private readonly CategoryService _categoryService;
+
+
+    public StockMovementsController(StockMovementService stockMovementService, AppDbContext context, CategoryService categoryService)
     {
-        private readonly AppDbContext _context;
+        _stockMovementService = stockMovementService;
+        _context = context;
+        _categoryService = categoryService;
+    }
 
-        public StockMovementsController(AppDbContext context)
+    public async Task<IActionResult> Index(int? productId, DateTime? from, DateTime? to)
+    {
+        ViewBag.Products = await _stockMovementService.GetProductSelectListAsync();
+        ViewBag.From = from?.ToString("yyyy-MM-dd");
+        ViewBag.To = to?.ToString("yyyy-MM-dd");
+
+        var movements = await _stockMovementService.GetStockMovementsAsync(productId, from, to);
+        return View(movements);
+    }
+
+    // GET: StockMovements/Create
+    public async Task<IActionResult> Create(int productId)
+    {
+        var product = await _context.Products
+            .Include(p => p.Category)
+            .ThenInclude(c => c.ParentCategory)
+            .FirstOrDefaultAsync(p => p.Id == productId);
+
+        if (product == null)
+            return NotFound();
+
+        ViewBag.ProductFullName = await _categoryService.GetProductFullName(product);
+
+        var movement = new StockMovement
         {
-            _context = context;
-        }
+            ProductId = productId,
+            Product = product
+        };
 
-        // GET: StockMovements/Create
-        //public IActionResult Create()
-        //{
-        //    ViewData["ProductId"] = new SelectList(_context.Products, "Id", "Name");
-        //    return View();
-        //}
-        public IActionResult Create(int productId)
-        {
-            var product = _context.Products.Find(productId);
-            if (product == null) return NotFound();
+        return View(movement);
+    }
 
-            ViewBag.ProductId = product.Id;
-            ViewBag.ProductName = product.Name;
+    // POST: /StockMovements/Create
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(StockMovement model)
+    {
+        if (!ModelState.IsValid)
+            return View(model);
 
-            var movement = new StockMovement
-            {
-                ProductId = product.Id
-            };
-
-            return View(movement);
-        }
-
-        // POST: StockMovements/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ProductId,Quantity,Note")] StockMovement movement)
-        {
-            if (ModelState.IsValid)
-            {
-                movement.Date = DateTime.Now;
-                _context.Add(movement);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Index", "Products");
-            }
-
-            ViewData["ProductId"] = new SelectList(_context.Products, "Id", "Name", movement.ProductId);
-            return View(movement);
-        }
+        await _stockMovementService.AddStockMovementAsync(model);
+        return RedirectToAction("Index", "Products");
     }
 }

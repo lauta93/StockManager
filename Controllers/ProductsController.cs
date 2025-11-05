@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using StockManager.Data;
-using StockManager.Models;
+using StockManager.ViewModels;
 using StockManager.Services;
 using System;
 using System.Collections.Generic;
@@ -27,8 +27,7 @@ namespace StockManager.Controllers
         {            
             var products = await _categoryService.GetAllProductViewModelsAsync();
             return View(products);
-        }
-        
+        }        
 
         // GET: Products/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -42,9 +41,9 @@ namespace StockManager.Controllers
         }
 
         // GET: Products/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {            
-            ViewData["CategoryId"] = _categoryService.GetCategorySelectListAsync();
+            ViewData["CategoryId"] = await _categoryService.GetCategorySelectListAsync();
             return View();
         }
 
@@ -60,7 +59,7 @@ namespace StockManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["CategoryId"] = _categoryService.GetCategorySelectListAsync();
+            ViewData["CategoryId"] = await _categoryService.GetCategorySelectListAsync();
             return View(product);
         }
 
@@ -83,7 +82,6 @@ namespace StockManager.Controllers
 
             return View(viewModel);
         }
-
 
         // POST: Products/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -112,7 +110,7 @@ namespace StockManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["CategoryId"] = _categoryService.GetCategorySelectListAsync();
+            ViewData["CategoryId"] = await _categoryService.GetCategorySelectListAsync();
             return View(product);
         }
 

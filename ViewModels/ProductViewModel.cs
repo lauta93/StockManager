@@ -1,4 +1,4 @@
-﻿namespace StockManager.Models
+﻿namespace StockManager.ViewModels
 {
     public class ProductViewModel
     {

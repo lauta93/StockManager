@@ -1,4 +1,4 @@
-﻿namespace StockManager.Models
+﻿namespace StockManager.ViewModels
 {
     public class StockMovementViewModel
     {
@@ -13,5 +13,6 @@
         public DateTime Date { get; set; }
 
         public string? Note { get; set; }
+        public string MovementType => Quantity >= 0 ? "Ingreso" : "Egreso";
     }
 }

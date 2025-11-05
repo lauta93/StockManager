@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using StockManager.Data;
-using StockManager.Models;
+using StockManager.ViewModels;
 
 namespace StockManager.Services
 {
@@ -27,7 +27,7 @@ namespace StockManager.Services
             {
                 names.Insert(0, current.Name);
 
-                // Si el padre no está cargado, lo traemos de la BD
+                // Si el padre no está cargado, lo trae de la BD
                 if (current.ParentCategory == null && current.ParentCategoryId.HasValue)
                 {
                     current = await _context.Categories
@@ -40,17 +40,17 @@ namespace StockManager.Services
             }
 
             if (names.Count > 1)
-                names.RemoveAt(0); // quita la raíz (por ejemplo "Producto")
+                names.RemoveAt(0); //quita la raíz "Producto"
 
             return string.Join(" > ", names);
         }
 
-        // Devuelve todos los productos con sus categorías jerárquicas
+        //Metodo que devuelve una lista de productos con su jerarquia de categorias para vistas de listado
         public async Task<List<ProductViewModel>> GetAllProductViewModelsAsync()
         {
             var products = await _context.Products
                 .Include(p => p.Category)
-                .Include(p => p.StockMovements)
+                .Include(p => p.StockMovements)                
                 .ToListAsync();
 
             var result = new List<ProductViewModel>();
@@ -74,7 +74,7 @@ namespace StockManager.Services
             return result;
         }
 
-        // Devuelve un producto individual con su jerarquía
+        //Devuelve un producto individual con su jerarquía
         public async Task<ProductViewModel?> GetProductViewModelAsync(int id)
         {
             var product = await _context.Products
@@ -134,6 +134,17 @@ namespace StockManager.Services
                 current = current.ParentCategory!;
             }
             return category;
+        }
+        //Devuelve un string con el numbre del producto y su jerarquia de categorias completa, menos la raiz like always
+        public async Task<string> GetProductFullName(Product product)
+        {
+            if (product == null)
+                return string.Empty;
+
+            var path = await GetCategoryPathAsync(product.Category);
+            return string.IsNullOrEmpty(path)
+                ? product.Name
+                : $"{product.Name} ({path})";
         }
 
     }

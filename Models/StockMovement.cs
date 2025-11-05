@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace StockManager.Models
+namespace StockManager.ViewModels
 {
     public class StockMovement
     {
