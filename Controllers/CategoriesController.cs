@@ -27,16 +27,9 @@ namespace StockManager.Controllers
         // GET: Categories
         public async Task<IActionResult> Index()
         {
-            //carga solo las categorias base
-            var categories = await _context.Categories
-                .AsNoTracking()
-                .ToListAsync();
-            var categorySelectList = await _categoryService.GetCategorySelectListAsync();
-            var categoryPaths = categorySelectList.ToDictionary(
-                item => int.Parse(item.Value),
-                item => item.Text
-            );
-            ViewBag.CategoryPaths = categoryPaths;
+            var categories = await _context.Categories.AsNoTracking().ToListAsync();
+            ViewBag.CategoryPaths = await _categoryService.GetCategoryPathsDictionaryAsync();
+            ViewBag.Categories = categories;
             return View(categories);
         }
         // GET: Categories/Details/5

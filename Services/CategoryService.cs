@@ -85,5 +85,14 @@ namespace StockManager.Services
             if (product == null) return string.Empty;
             return await GetProductFullName(product);
         }
+        //Metodo para obtener un diccionario de ids y rutas de categorias para el index del controlador
+        public async Task<Dictionary<int, string>> GetCategoryPathsDictionaryAsync()
+        {
+            var selectList = await GetCategorySelectListAsync();
+            return selectList.ToDictionary(
+                item => int.Parse(item.Value),
+                item => item.Text
+            );
+        }
     }
 }
