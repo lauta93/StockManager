@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using StockManager.Data;
-using StockManager.ViewModels;
 using StockManager.Services; 
+using StockManager.ViewModels;
 using System.Threading.Tasks;
 
 public class StockMovementsController : Controller
@@ -30,16 +31,10 @@ public class StockMovementsController : Controller
     // GET: StockMovements/Create
     public async Task<IActionResult> Create(int productId)
     {
-        var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == productId);
-        if (product == null)
+        var movement = await _stockMovementService.GetCreateViewModelAsync(productId);
+        if(movement == null) 
             return NotFound();
-        //Una sola llamada al service
-        ViewBag.ProductFullName = await _categoryService.GetProductFullName(product);
-        var movement = new StockMovement
-        {
-            ProductId = productId,
-            Product = product
-        };
+        ViewBag.ProductFullName = await _categoryService.GetProductFullName(productId);
         return View(movement);
     }
     // POST: /StockMovements/Create

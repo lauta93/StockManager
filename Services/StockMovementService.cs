@@ -17,11 +17,17 @@ public class StockMovementService
     //Metodo para obtener el ViewModel para la vista create
     public async Task<StockMovement?> GetCreateViewModelAsync(int productId)
     {
-        var product = await _context.Products.FindAsync(productId);
-        if (product == null) return null;
+        //Carga los productos y sus movimientos
+        var product = await _context.Products
+            .Include(p => p.StockMovements)
+            .FirstOrDefaultAsync(p => p.Id == productId);
+        if (product == null) 
+            return null;
         var movement = new StockMovement
         {
-            ProductId = product.Id
+            ProductId = product.Id,
+            Product = product, 
+            Date = DateTime.Now
         };
         return movement;
     }
@@ -48,7 +54,7 @@ public class StockMovementService
     public async Task<List<StockMovementViewModel>> GetStockMovementsAsync(
            int? productId = null,
            DateTime? from = null,
-           DateTime? to = null)    {
+           DateTime? to = null) {
         var query = _context.StockMovements
             .Include(m => m.Product)
             .AsQueryable();
