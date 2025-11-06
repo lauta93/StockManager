@@ -29,7 +29,6 @@ namespace StockManager.Controllers
         {
             var categories = await _context.Categories.AsNoTracking().ToListAsync();
             ViewBag.CategoryPaths = await _categoryService.GetCategoryPathsDictionaryAsync();
-            ViewBag.Categories = categories;
             return View(categories);
         }
         // GET: Categories/Details/5
