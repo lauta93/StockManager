@@ -15,7 +15,7 @@ namespace StockManager.Services
             _context = context;
             _categoryPathService = categoryPathService;
         }
-        //Helper para llenar un viewmodel con su jerarquia de categorias
+        //Helper para llenar un viewmodel de producto con sus movimientos ya cargados, agrega la ruta de categorias
         private async Task<ProductViewModel> CreateProductViewModelAsync(Product product)
         {
             var path = await _categoryPathService.GetCategoryPathAsync(product.CategoryId);
@@ -30,11 +30,12 @@ namespace StockManager.Services
                 CategoryPath = path
             };
         }
-        //Metodo que devuelve una lista de viewmodels con su jerarquia de categorias
+        //Metodo que devuelve una lista de prodViewModels de todos los productos con todos sus movimientos para el
+        //index de productos
         public async Task<List<ProductViewModel>> GetAllProductViewModelsAsync()
         {
             var products = await _context.Products
-                .Include(p => p.StockMovements)
+                .Include(p => p.StockMovements)//trae los movimientos asociados a cada producto
                 .ToListAsync();
             var result = new List<ProductViewModel>();
             foreach (var product in products)
@@ -43,7 +44,7 @@ namespace StockManager.Services
             }
             return result;
         }
-        //Metodo que devuelve un viewmodel de un producto en particular con su jerarquia
+        //Metodo que devuelve un viewmodel de un producto en particular 
         public async Task<ProductViewModel?> GetProductViewModelAsync(int id)
         {
             var product = await _context.Products
@@ -85,7 +86,7 @@ namespace StockManager.Services
             if (product == null) return string.Empty;
             return await GetProductFullName(product);
         }
-        //Metodo para obtener un diccionario de ids y rutas de categorias para el index del controlador
+        //Metodo para obtener un diccionario de ids y rutas de categorias para el index de categorias
         public async Task<Dictionary<int, string>> GetCategoryPathsDictionaryAsync()
         {
             var selectList = await GetCategorySelectListAsync();
@@ -93,6 +94,36 @@ namespace StockManager.Services
                 item => int.Parse(item.Value),
                 item => item.Text
             );
+        }
+        //metodo para colorear las filas de productos segun su stock
+        public static string GetStockRowClass(int currentStock, int minimumStock)
+        {
+            if (currentStock < 0)
+                return "table-danger";
+            else if (currentStock < minimumStock)
+                return "table-warning";
+            else
+                return "";
+        }
+        //metodo para colorear el stock actual en el index de productos
+        public static string GetStockBadgeClass(int currentStock, int minimumStock)
+        {
+            if (currentStock < 0)
+                return "badge bg-danger";
+            else if (currentStock < minimumStock)
+                return "badge bg-warning";
+            else
+                return "badge bg-success";
+        }
+        //metodo para llenar la columna de estado
+        public static string GetStockStatusText(int currentStock, int minimumStock)
+        {
+            if (currentStock < 0)
+                return "Pedido a entregar";
+            else if (currentStock < minimumStock)
+                return "Stock Bajo";
+            else
+                return "Stock Normal";
         }
     }
 }

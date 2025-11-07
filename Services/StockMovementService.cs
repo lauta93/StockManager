@@ -14,15 +14,15 @@ public class StockMovementService
         _context = context;
         _categoryPathService = categoryPathService;
     }
-    //Metodo para obtener el ViewModel para la vista create
+    //Metodo que devuelve un objeto StockMovement con un producto ya cargado (asociado) 
     public async Task<StockMovement?> GetCreateViewModelAsync(int productId)
     {
-        //Carga los productos y sus movimientos
+        //Carga el producto asociado por id
         var product = await _context.Products
-            .Include(p => p.StockMovements)
             .FirstOrDefaultAsync(p => p.Id == productId);
         if (product == null) 
             return null;
+        //Crea el movimiento de stock asociado al producto para ser llenado en la vista
         var movement = new StockMovement
         {
             ProductId = product.Id,
@@ -38,7 +38,7 @@ public class StockMovementService
         _context.Add(movement);
         await _context.SaveChangesAsync();
     }
-    //Metodo que devuelve lista de productos para selectlist
+    //Metodo que devuelve una lista de todos los productos para selectlist
     public async Task<List<SelectListItem>> GetProductSelectListAsync()
     {
         return await _context.Products

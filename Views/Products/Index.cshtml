@@ -1,4 +1,5 @@
 ﻿@using StockManager.ViewModels
+@using StockManager.Services
 @model IEnumerable<ProductViewModel>
 
 @{
@@ -7,34 +8,41 @@
 
 <h1>Productos</h1>
 
-<p>
-    <a asp-action="Create">Crear nuevo</a>
-</p>
-
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>@Html.DisplayNameFor(model => model.Name)</th>
-            <th>@Html.DisplayNameFor(model => model.Price)</th>
-            <th>@Html.DisplayNameFor(model => model.CurrentStock)</th>
-            <th>@Html.DisplayNameFor(model => model.MinimumStock)</th>
-            <th>Categorías</th>
+            <th>Producto</th>
+            <th>Precio</th>
+            <th>Stock Actual</th>
+            <th>Stock Mínimo</th>
+            <th>Estado</th>
+            <th>Categoría</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model)
         {
-            <tr>
+            <tr class="@CategoryService.GetStockRowClass(item.CurrentStock, item.MinimumStock)">
                 <td>@Html.DisplayFor(modelItem => item.Name)</td>
                 <td>@Html.DisplayFor(modelItem => item.Price)</td>
-                <td>@Html.DisplayFor(modelItem => item.CurrentStock)</td>
-                <td>@Html.DisplayFor(modelItem => item.MinimumStock)</td>
-                <td>@item.CategoryPath</td>
                 <td>
-                    <a asp-controller="StockMovements" asp-action="Create" asp-route-productId="@item.Id" class="btn btn-sm btn-outline-primary">
-                        + / -
-                    </a>
+                    <span class="@CategoryService.GetStockBadgeClass(item.CurrentStock, item.MinimumStock)">
+                        @item.CurrentStock
+                    </span>
+                </td>
+                <td>@Html.DisplayFor(modelItem => item.MinimumStock)</td>
+                <td>
+                    <small class="text-muted">
+                        @CategoryService.GetStockStatusText(item.CurrentStock, item.MinimumStock)
+                    </small>
+                </td>
+                <td class="small" style="word-wrap: break-word; max-width: 180px;">@item.CategoryPath</td>
+                <td>
+                    <a asp-controller="StockMovements" asp-action="Create" asp-route-productId="@item.Id" 
+                       class="btn btn-sm btn-outline-primary">+ / -</a>
+                </td>
+                <td class="small">
                     <a asp-action="Edit" asp-route-id="@item.Id">Editar</a> |
                     <a asp-action="Details" asp-route-id="@item.Id">Detalles</a> |
                     <a asp-action="Delete" asp-route-id="@item.Id">Eliminar</a>

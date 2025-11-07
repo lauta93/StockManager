@@ -13,8 +13,7 @@ public class StockMovementsController : Controller
     private readonly CategoryService _categoryService;
     private readonly StockMovementService _stockMovementService;    
     
-    public StockMovementsController( AppDbContext context, CategoryService categoryService,
-        StockMovementService stockMovementService)
+    public StockMovementsController(AppDbContext context, CategoryService categoryService, StockMovementService stockMovementService)
     {
         _context = context;
         _categoryService = categoryService;
