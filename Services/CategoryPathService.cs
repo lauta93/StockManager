@@ -41,10 +41,10 @@ namespace StockManager.Services
         {
             if (category.ParentCategoryId.HasValue && category.ParentCategory == null)
             {
-                //carga el padre desde la BD
+                //carga el padre desde la BD en memoria (ParentCategory)
                 category.ParentCategory = await _context.Categories
                     .FirstOrDefaultAsync(c => c.Id == category.ParentCategoryId.Value);
-                //carga recursivamente sus padres
+                //carga recursivamente los padres
                 if (category.ParentCategory != null)
                 {
                     await LoadParentRecursivelyAsync(category.ParentCategory);

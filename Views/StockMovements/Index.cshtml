@@ -1,11 +1,22 @@
 ﻿@using StockManager.ViewModels
-@model IEnumerable<StockMovementViewModel>
+@model PaginationViewModel<StockMovementViewModel>
 
 @{
     ViewData["Title"] = "Movimientos de Stock";
 }
 
 <h2 class="mb-4">@ViewData["Title"]</h2>
+<div class="row mb-3">
+    <div class="col-md-6">
+    </div>
+    <div class="col-md-6 text-end">
+        <form method="get" class="form-inline">
+            <input type="hidden" name="productId" value="@ViewBag.CurrentProductId" />
+            <input type="hidden" name="from" value="@ViewBag.From" />
+            <input type="hidden" name="to" value="@ViewBag.To" />
+        </form>
+    </div>
+</div>
 
 <form method="get" class="row mb-4 g-3 align-items-end">
     <div class="col-md-4">
@@ -47,7 +58,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var item in Model.Items)
         {
             var quantityClass = item.Quantity > 0 ? "text-success fw-bold" : "text-danger fw-bold";
             var sign = item.Quantity > 0 ? "+" : "";
@@ -61,3 +72,56 @@
         }
     </tbody>
 </table>
+<!-- SELECTOR DE ITEMS CON BOTONES -->
+<div class="row mt-3">
+    <div class="col-md-12">
+        <form method="get" class="d-inline">
+            <span class="me-2">Items por página:</span>
+            @foreach (var option in Model.PageSizeOptions)
+            {
+                <button type="submit"
+                        name="pageSize"
+                        value="@option"
+                        class="btn @(Model.PageSize == option ? "btn-primary" : "btn-outline-primary") btn-sm me-1">
+                    @option
+                </button>
+            }
+            <input type="hidden" name="page" value="1" />
+        </form>
+    </div>
+</div>
+<!-- PAGINACIÓN -->
+@if (Model.TotalPages > 1)
+{
+    <nav>
+        <ul class="pagination">
+            <!-- Botón Anterior -->
+            @if (Model.HasPrevious)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber - 1, pageSize = Model.PageSize })">
+                        &laquo; Anterior
+                    </a>
+                </li>
+            }
+            <!-- Números de Página -->
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { page = i, pageSize = Model.PageSize })">
+                        @i
+                    </a>
+                </li>
+            }
+            <!-- Botón Siguiente -->
+            @if (Model.HasNext)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber + 1, pageSize = Model.PageSize })">
+                        Siguiente &raquo;
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+}

@@ -2,8 +2,9 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using StockManager.Data;
-using StockManager.ViewModels;
+using StockManager.Extensions;
 using StockManager.Services;
+using StockManager.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,10 +23,11 @@ namespace StockManager.Controllers
             _categoryService = categoryService;
         }
         // GET: Products
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
         {
             var products = await _categoryService.GetAllProductViewModelsAsync();
-            return View(products);
+            var pagedProducts = products.ToPagedList(page, pageSize);
+            return View(pagedProducts);
         }
         // GET: Products/Details/5
         public async Task<IActionResult> Details(int? id)

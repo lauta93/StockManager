@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using StockManager.Data;
+using StockManager.Extensions;
 using StockManager.Services; 
 using StockManager.ViewModels;
 using System.Threading.Tasks;
@@ -19,13 +20,14 @@ public class StockMovementsController : Controller
         _categoryService = categoryService;
         _stockMovementService = stockMovementService;
     }
-    public async Task<IActionResult> Index(int? productId, DateTime? from, DateTime? to)
+    public async Task<IActionResult> Index(int? productId, DateTime? from, DateTime? to, int page = 1, int pageSize = 10)
     {
+        var movements = await _stockMovementService.GetStockMovementsAsync(productId, from, to);
+        var pagedMovements = movements.ToPagedList(page, pageSize);
         ViewBag.Products = await _stockMovementService.GetProductSelectListAsync();
         ViewBag.From = from?.ToString("yyyy-MM-dd");
         ViewBag.To = to?.ToString("yyyy-MM-dd");
-        var movements = await _stockMovementService.GetStockMovementsAsync(productId, from, to);
-        return View(movements);
+        return View(pagedMovements);
     }
     // GET: StockMovements/Create
     public async Task<IActionResult> Create(int productId)

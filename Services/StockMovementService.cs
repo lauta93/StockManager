@@ -7,11 +7,14 @@ using StockManager.ViewModels;
 public class StockMovementService
 {
     private readonly AppDbContext _context;
+    private readonly CategoryService _categoryService;
     private readonly CategoryPathService _categoryPathService;
 
-    public StockMovementService(AppDbContext context, CategoryPathService categoryPathService)
+    public StockMovementService(AppDbContext context,CategoryService categoryService,
+        CategoryPathService categoryPathService)
     {
         _context = context;
+        _categoryService = categoryService;
         _categoryPathService = categoryPathService;
     }
     //Metodo que devuelve un objeto StockMovement con un producto ya cargado (asociado) 
@@ -46,7 +49,7 @@ public class StockMovementService
             .Select(p => new SelectListItem
             {
                 Value = p.Id.ToString(),
-                Text = p.Name
+                Text = _categoryService.GetProductFullName(p).Result.ToString()//muestra el nombre con sus categorias
             })
             .ToListAsync();
     }
