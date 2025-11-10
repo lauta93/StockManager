@@ -12,22 +12,40 @@ public class StockMovementsController : Controller
 {
     private readonly AppDbContext _context;
     private readonly CategoryService _categoryService;
-    private readonly StockMovementService _stockMovementService;    
-    
-    public StockMovementsController(AppDbContext context, CategoryService categoryService, StockMovementService stockMovementService)
+    private readonly StockMovementService _stockMovementService;
+    private readonly ProductSearchService _productSearchService;
+
+    public StockMovementsController(AppDbContext context, CategoryService categoryService,
+        StockMovementService stockMovementService, ProductSearchService productSearchService)
     {
         _context = context;
         _categoryService = categoryService;
         _stockMovementService = stockMovementService;
+        _productSearchService = productSearchService;
     }
-    public async Task<IActionResult> Index(int? productId, DateTime? from, DateTime? to, int page = 1, int pageSize = 10)
+    public async Task<IActionResult> Index(int? productId, string productSearch, DateTime? from, DateTime? to, int page = 1, int pageSize = 10)
     {
+        // Si se busca por texto, encontrar el ID
+        if (!string.IsNullOrEmpty(productSearch) && !productId.HasValue)
+        {
+            var products = await _productSearchService.SearchProductsAsync(productSearch);
+            if (products.Any())
+                productId = products.First().Id;
+        }
         var movements = await _stockMovementService.GetStockMovementsAsync(productId, from, to);
         var pagedMovements = movements.ToPagedList(page, pageSize);
-        ViewBag.Products = await _stockMovementService.GetProductSelectListAsync();
         ViewBag.From = from?.ToString("yyyy-MM-dd");
         ViewBag.To = to?.ToString("yyyy-MM-dd");
+        ViewBag.CurrentProductId = productId;
+        ViewBag.ProductSearch = productSearch;
         return View(pagedMovements);
+    }
+    // Endpoint para autocompletado
+    [HttpGet]
+    public async Task<JsonResult> SearchProducts(string term)
+    {
+        var results = await _productSearchService.SearchProductsAsync(term);
+        return Json(results.Select(r => new { id = r.Id, text = r.DisplayText }));
     }
     // GET: StockMovements/Create
     public async Task<IActionResult> Create(int productId)

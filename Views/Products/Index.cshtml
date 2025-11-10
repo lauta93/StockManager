@@ -7,9 +7,47 @@
 }
 
 <h1>Productos</h1>
+
 <p>
     <a asp-action="Create" class="btn btn-primary">Agregar nuevo producto</a>
 </p>
+
+<!-- FORMULARIO DE BÚSQUEDA-->
+<div class="row mb-3">
+    <div class="col-md-12">
+        <form method="get" class="row g-2 align-items-end">
+            <!-- Buscador de Productos -->
+            <div class="col-md-6">
+                <label class="form-label">Buscar Producto:</label>
+                <input type="text"
+                       id="productSearch"
+                       name="searchTerm"
+                       value="@ViewBag.SearchTerm"
+                       class="form-control"
+                       placeholder="Nombre del producto"
+                       autocomplete="off" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Categoría:</label>
+                <select name="categoryId" class="form-select" onchange="this.form.submit()">
+                    <option value="">Todas las categorías</option>
+                    @foreach (var category in ViewBag.Categories)
+                    {
+                        <option value="@category.Value"
+                                selected="@(category.Value == ViewBag.CategoryId?.ToString() ? "selected" : null)">
+                            @category.Text
+                        </option>
+                    }
+                </select>
+            </div>
+            <!-- Botones -->
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100 mb-2">Buscar</button>
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary w-100">Limpiar</a>
+            </div>
+        </form>
+    </div>
+</div>
 <div class="col-md-12 text-start">
     <div class="text-muted">
         Mostrando @((Model.PageNumber - 1) * Model.PageSize + 1) -
@@ -48,7 +86,7 @@
                 </td>
                 <td class="small" style="word-wrap: break-word; max-width: 180px;">@item.CategoryPath</td>
                 <td>
-                    <a asp-controller="StockMovements" asp-action="Create" asp-route-productId="@item.Id" 
+                    <a asp-controller="StockMovements" asp-action="Create" asp-route-productId="@item.Id"
                        class="btn btn-sm btn-outline-primary">+ / -</a>
                 </td>
                 <td class="small">
@@ -60,7 +98,7 @@
         }
     </tbody>
 </table>
-<!-- SELECTOR DE ITEMS CON BOTONES -->
+<!-- SELECTOR DE CANTIDAD DE ITEMS CON BOTONES -->
 <div class="row mt-3">
     <div class="col-md-12">
         <form method="get" class="d-inline">
@@ -74,6 +112,8 @@
                     @option
                 </button>
             }
+            <input type="hidden" name="searchTerm" value="@ViewBag.SearchTerm" />
+            <input type="hidden" name="categoryId" value="@ViewBag.CategoryId" />
             <input type="hidden" name="page" value="1" />
         </form>
     </div>
@@ -87,31 +127,41 @@
             @if (Model.HasPrevious)
             {
                 <li class="page-item">
-                    <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber - 1, pageSize = Model.PageSize })">
+                    <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber - 1, pageSize = Model.PageSize, searchTerm = ViewBag.SearchTerm, categoryId = ViewBag.CategoryId })">
                         &laquo; Anterior
                     </a>
                 </li>
             }
-
             <!-- Números de Página -->
             @for (int i = 1; i <= Model.TotalPages; i++)
             {
                 <li class="page-item @(i == Model.PageNumber ? "active" : "")">
-                    <a class="page-link" href="@Url.Action("Index", new { page = i, pageSize = Model.PageSize })">
+                    <a class="page-link" href="@Url.Action("Index", new { page = i, pageSize = Model.PageSize, searchTerm = ViewBag.SearchTerm, categoryId = ViewBag.CategoryId })">
                         @i
                     </a>
                 </li>
             }
-
             <!-- Botón Siguiente -->
             @if (Model.HasNext)
             {
                 <li class="page-item">
-                    <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber + 1, pageSize = Model.PageSize })">
+                    <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber + 1, pageSize = Model.PageSize, searchTerm = ViewBag.SearchTerm, categoryId = ViewBag.CategoryId })">
                         Siguiente &raquo;
                     </a>
                 </li>
             }
         </ul>
     </nav>
+}
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Solo permitir búsqueda con Enter
+            $('#productSearch').keypress(function(event) {
+                if (event.which == 13) { // Enter key
+                    $(this).closest('form').submit();
+                }
+            });
+        });
+    </script>
 }

@@ -15,6 +15,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<CategoryPathService>();
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<StockMovementService>();
+builder.Services.AddScoped<ProductSearchService>();
 
 var app = builder.Build();
 

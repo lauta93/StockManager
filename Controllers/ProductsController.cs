@@ -5,10 +5,6 @@ using StockManager.Data;
 using StockManager.Extensions;
 using StockManager.Services;
 using StockManager.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace StockManager.Controllers
 {
@@ -16,18 +12,38 @@ namespace StockManager.Controllers
     {
         private readonly AppDbContext _context;
         private readonly CategoryService _categoryService;
+        private readonly ProductSearchService _productSearchService;
 
-        public ProductsController(AppDbContext context, CategoryService categoryService)
+        public ProductsController(AppDbContext context, CategoryService categoryService, 
+               ProductSearchService productSearchService)
         {
             _context = context;
             _categoryService = categoryService;
+            _productSearchService = productSearchService;
         }
         // GET: Products
-        public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
+        public async Task<IActionResult> Index(string searchTerm, int? categoryId, int page = 1, int pageSize = 10)
         {
             var products = await _categoryService.GetAllProductViewModelsAsync();
-            var pagedProducts = products.ToPagedList(page, pageSize);
-            return View(pagedProducts);
+            // Aplicar filtros
+            if (categoryId.HasValue)
+                products = products.Where(p => p.CategoryId == categoryId.Value).ToList();
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                var termLower = searchTerm.ToLower();
+                products = products.Where(p => p.Name.ToLower().Contains(termLower) || p.Id.ToString().Contains(searchTerm)).ToList();
+            }
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.CategoryId = categoryId;
+            ViewBag.Categories = await _categoryService.GetCategorySelectListAsync(categoryId);
+            return View(products.ToPagedList(page, pageSize));
+        }
+        // Endpoint para autocompletado
+        [HttpGet]
+        public async Task<JsonResult> SearchProducts(string term)
+        {
+            var results = await _productSearchService.SearchProductsAsync(term);
+            return Json(results.Select(r => new { id = r.Id, text = r.DisplayText }));
         }
         // GET: Products/Details/5
         public async Task<IActionResult> Details(int? id)

@@ -15,7 +15,7 @@ namespace StockManager.Services
             _context = context;
             _categoryPathService = categoryPathService;
         }
-        //Helper para llenar un viewmodel de producto con sus movimientos ya cargados, agrega la ruta de categorias
+        //Helper para llenar un viewmodel de producto con sus movimientos ya cargados, agrega la ruta de categorias        
         private async Task<ProductViewModel> CreateProductViewModelAsync(Product product)
         {
             var path = await _categoryPathService.GetCategoryPathAsync(product.CategoryId);
@@ -35,8 +35,9 @@ namespace StockManager.Services
         public async Task<List<ProductViewModel>> GetAllProductViewModelsAsync()
         {
             var products = await _context.Products
-                .Include(p => p.StockMovements)//trae los movimientos asociados a cada producto
+                .Include(p => p.StockMovements)
                 .ToListAsync();
+
             var result = new List<ProductViewModel>();
             foreach (var product in products)
             {

@@ -6,47 +6,34 @@
 }
 
 <h2 class="mb-4">@ViewData["Title"]</h2>
-<div class="row mb-3">
-    <div class="col-md-6">
-    </div>
-    <div class="col-md-6 text-end">
-        <form method="get" class="form-inline">
-            <input type="hidden" name="productId" value="@ViewBag.CurrentProductId" />
-            <input type="hidden" name="from" value="@ViewBag.From" />
-            <input type="hidden" name="to" value="@ViewBag.To" />
-        </form>
-    </div>
-</div>
 
+<!-- FORMULARIO DE BÚSQUEDA ACTUALIZADO -->
 <form method="get" class="row mb-4 g-3 align-items-end">
+    <!-- Buscador de Productos-->
     <div class="col-md-4">
-        <label class="form-label">Producto</label>
-        <select name="productId" class="form-select">
-            <option value="">-- Todos --</option>
-            @foreach (var p in (List<SelectListItem>)ViewBag.Products)
-            {
-                <option value="@p.Value" selected="@(Context.Request.Query["productId"] == p.Value ? "selected" : null)">
-                    @p.Text
-                </option>
-            }
-        </select>
+        <label class="form-label">Buscar Producto:</label>
+        <input type="text" 
+               id="productSearch" 
+               name="productSearch" 
+               value="@ViewBag.ProductSearch" 
+               class="form-control" 
+               placeholder="Escribe nombre o ID del producto..."
+               autocomplete="off" />
+        <input type="hidden" id="productId" name="productId" value="@ViewBag.CurrentProductId" />
     </div>
-
     <div class="col-md-3">
         <label class="form-label">Desde</label>
         <input type="date" name="from" class="form-control" value="@ViewBag.From" />
     </div>
-
     <div class="col-md-3">
         <label class="form-label">Hasta</label>
         <input type="date" name="to" class="form-control" value="@ViewBag.To" />
     </div>
-
     <div class="col-md-2 d-flex justify-content-end">
-        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        <button type="submit" class="btn btn-primary w-100 me-2">Filtrar</button>
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary w-100">Limpiar</a>
     </div>
 </form>
-
 <table class="table table-hover align-middle">
     <thead class="table-light">
         <tr>
@@ -65,7 +52,9 @@
             <tr>
                 <td>@item.Date.ToString("dd/MM/yyyy HH:mm")</td>
                 <td>@item.ProductName</td>
-                <td class="text-muted">@item.CategoryPath</td>
+                <td class="small" style="word-wrap: break-word; max-width: 180px;">
+                    @item.CategoryPath
+                </td>
                 <td class="text-center @quantityClass">@sign@item.Quantity</td>
                 <td>@item.Note</td>
             </tr>
@@ -86,6 +75,11 @@
                     @option
                 </button>
             }
+            <!-- Mantener filtros en la paginación -->
+            <input type="hidden" name="productId" value="@ViewBag.CurrentProductId" />
+            <input type="hidden" name="productSearch" value="@ViewBag.ProductSearch" />
+            <input type="hidden" name="from" value="@ViewBag.From" />
+            <input type="hidden" name="to" value="@ViewBag.To" />
             <input type="hidden" name="page" value="1" />
         </form>
     </div>
@@ -99,7 +93,14 @@
             @if (Model.HasPrevious)
             {
                 <li class="page-item">
-                    <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber - 1, pageSize = Model.PageSize })">
+                    <a class="page-link" href="@Url.Action("Index", new { 
+                        page = Model.PageNumber - 1, 
+                        pageSize = Model.PageSize,
+                        productId = ViewBag.CurrentProductId,
+                        productSearch = ViewBag.ProductSearch,
+                        from = ViewBag.From,
+                        to = ViewBag.To
+                    })">
                         &laquo; Anterior
                     </a>
                 </li>
@@ -108,7 +109,14 @@
             @for (int i = 1; i <= Model.TotalPages; i++)
             {
                 <li class="page-item @(i == Model.PageNumber ? "active" : "")">
-                    <a class="page-link" href="@Url.Action("Index", new { page = i, pageSize = Model.PageSize })">
+                    <a class="page-link" href="@Url.Action("Index", new { 
+                        page = i, 
+                        pageSize = Model.PageSize,
+                        productId = ViewBag.CurrentProductId,
+                        productSearch = ViewBag.ProductSearch,
+                        from = ViewBag.From,
+                        to = ViewBag.To
+                    })">
                         @i
                     </a>
                 </li>
@@ -117,11 +125,52 @@
             @if (Model.HasNext)
             {
                 <li class="page-item">
-                    <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber + 1, pageSize = Model.PageSize })">
+                    <a class="page-link" href="@Url.Action("Index", new { 
+                        page = Model.PageNumber + 1, 
+                        pageSize = Model.PageSize,
+                        productId = ViewBag.CurrentProductId,
+                        productSearch = ViewBag.ProductSearch,
+                        from = ViewBag.From,
+                        to = ViewBag.To
+                    })">
                         Siguiente &raquo;
                     </a>
                 </li>
             }
         </ul>
     </nav>
+}
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.1/themes/smoothness/jquery-ui.css">
+    <script>
+        $(document).ready(function() {
+            // Autocompletado para StockMovements
+            $('#productSearch').autocomplete({
+                source: function(request, response) {
+                    $.getJSON('@Url.Action("SearchProducts", "StockMovements")', { term: request.term }, function(data) {
+                        response($.map(data, function(item) {
+                            return {
+                                label: item.text,
+                                value: item.text,
+                                id: item.id
+                            };
+                        }));
+                    });
+                },
+                minLength: 2,
+                select: function(event, ui) {
+                    $('#productId').val(ui.item.id);
+                    $('#productSearch').val(ui.item.label);
+                    return false;
+                },
+                change: function(event, ui) {
+                    if (!ui.item) {
+                        $('#productId').val('');
+                    }
+                }
+            });
+        });
+    </script>
 }
