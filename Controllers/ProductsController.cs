@@ -25,9 +25,12 @@ namespace StockManager.Controllers
         public async Task<IActionResult> Index(string searchTerm, int? categoryId, int page = 1, int pageSize = 10)
         {
             var products = await _categoryService.GetAllProductViewModelsAsync();
-            // Aplicar filtros
+            //Aplica filtros, trayendo todos los prod de las subcategorias
             if (categoryId.HasValue)
-                products = products.Where(p => p.CategoryId == categoryId.Value).ToList();
+            {
+                var allCategoryIds = await _categoryService.GetAllSubcategoryIdsAsync(categoryId.Value);
+                products = products.Where(p => allCategoryIds.Contains(p.CategoryId)).ToList();
+            }
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 var termLower = searchTerm.ToLower();

@@ -126,5 +126,10 @@ namespace StockManager.Services
             else
                 return "Stock Normal";
         }
+        //Metodo para obtener TODOS los IDs de subcategorías para el filtrado
+        public async Task<List<int>> GetAllSubcategoryIdsAsync(int categoryId)
+        {
+            return await _categoryPathService.GetAllSubcategoryIdsAsync(categoryId);
+        }
     }
 }

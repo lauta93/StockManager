@@ -65,5 +65,24 @@ namespace StockManager.Services
                 names.RemoveAt(0); //quita la raíz "Producto"
             return string.Join(" > ", names);
         }
+        //Metodo recursivo para obtener TODOS los IDs de subcategorías
+        public async Task<List<int>> GetAllSubcategoryIdsAsync(int categoryId)
+        {
+            var allIds = new List<int> { categoryId };
+
+            // Obtener hijos directos
+            var directChildren = await _context.Categories
+                .Where(c => c.ParentCategoryId == categoryId)
+                .Select(c => c.Id)
+                .ToListAsync();
+
+            // Llamar recursivamente para cada hijo
+            foreach (var childId in directChildren)
+            {
+                var childIds = await GetAllSubcategoryIdsAsync(childId);
+                allIds.AddRange(childIds);
+            }
+            return allIds.Distinct().ToList();
+        }
     }
 }
