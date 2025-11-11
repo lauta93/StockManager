@@ -25,14 +25,7 @@ public class StockMovementsController : Controller
     }
     public async Task<IActionResult> Index(int? productId, string productSearch, DateTime? from, DateTime? to, int page = 1, int pageSize = 10)
     {
-        // Si se busca por texto, encontrar el ID
-        if (!string.IsNullOrEmpty(productSearch) && !productId.HasValue)
-        {
-            var products = await _productSearchService.SearchProductsAsync(productSearch);
-            if (products.Any())
-                productId = products.First().Id;
-        }
-        var movements = await _stockMovementService.GetStockMovementsAsync(productId, from, to);
+        var movements = await _stockMovementService.GetStockMovementsAsync(productId, productSearch, from, to);
         var pagedMovements = movements.ToPagedList(page, pageSize);
         ViewBag.From = from?.ToString("yyyy-MM-dd");
         ViewBag.To = to?.ToString("yyyy-MM-dd");

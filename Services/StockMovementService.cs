@@ -41,29 +41,24 @@ public class StockMovementService
         _context.Add(movement);
         await _context.SaveChangesAsync();
     }
-    //Metodo que devuelve una lista de todos los productos para selectlist
-    public async Task<List<SelectListItem>> GetProductSelectListAsync()
-    {
-        return await _context.Products
-            .OrderBy(p => p.Name)
-            .Select(p => new SelectListItem
-            {
-                Value = p.Id.ToString(),
-                Text = _categoryService.GetProductFullName(p).Result.ToString()//muestra el nombre con sus categorias
-            })
-            .ToListAsync();
-    }
     //Metodo para obtener los movimientos de stock con filtros opcionales
-    public async Task<List<StockMovementViewModel>> GetStockMovementsAsync(
-           int? productId = null,
-           DateTime? from = null,
-           DateTime? to = null) {
+    public async Task<List<StockMovementViewModel>> GetStockMovementsAsync( int? productId = null,
+         string productSearch = null, DateTime? from = null, DateTime? to = null)
+    {
         var query = _context.StockMovements
             .Include(m => m.Product)
             .AsQueryable();
-        // Filtrado
+        //Filtrado
         if (productId.HasValue)
+        {
             query = query.Where(m => m.ProductId == productId.Value);
+        }
+        else if (!string.IsNullOrEmpty(productSearch))
+        {
+            //BUSCAR POR TEXTO 
+            var searchTerm = productSearch.ToLower();
+            query = query.Where(m => m.Product.Name.ToLower().Contains(searchTerm));
+        }
         if (from.HasValue)
             query = query.Where(m => m.Date >= from.Value);
         if (to.HasValue)
@@ -76,7 +71,7 @@ public class StockMovementService
         {
             var path = m.Product?.CategoryId != null ?
              await _categoryPathService.GetCategoryPathAsync(m.Product.CategoryId)
-    :        string.Empty;
+            : string.Empty;
             result.Add(new StockMovementViewModel
             {
                 Id = m.Id,

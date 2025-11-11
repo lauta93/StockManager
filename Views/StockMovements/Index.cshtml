@@ -140,37 +140,3 @@
         </ul>
     </nav>
 }
-@section Scripts {
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js"></script>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.1/themes/smoothness/jquery-ui.css">
-    <script>
-        $(document).ready(function() {
-            // Autocompletado para StockMovements
-            $('#productSearch').autocomplete({
-                source: function(request, response) {
-                    $.getJSON('@Url.Action("SearchProducts", "StockMovements")', { term: request.term }, function(data) {
-                        response($.map(data, function(item) {
-                            return {
-                                label: item.text,
-                                value: item.text,
-                                id: item.id
-                            };
-                        }));
-                    });
-                },
-                minLength: 2,
-                select: function(event, ui) {
-                    $('#productId').val(ui.item.id);
-                    $('#productSearch').val(ui.item.label);
-                    return false;
-                },
-                change: function(event, ui) {
-                    if (!ui.item) {
-                        $('#productId').val('');
-                    }
-                }
-            });
-        });
-    </script>
-}

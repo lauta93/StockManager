@@ -21,38 +21,15 @@ namespace StockManager.Services
                 {
                     Id = p.Id,
                     Name = p.Name,
-                    DisplayText = $"{p.Name} (ID: {p.Id})"
+                    DisplayText = $"{p.Name}"
                 })
                 .ToListAsync();
             var termLower = term.ToLower();
             return allProducts
                 .Where(p =>
-                    p.Name.ToLower().Contains(termLower) ||
-                    p.Id.ToString().Contains(term))
+                    p.Name.ToLower().Contains(termLower))
                 .Take(10)
                 .ToList();
-        }
-        public async Task<List<ProductSearchResult>> SearchProductsAdvancedAsync(string term, int? categoryId = null)
-        {
-            var query = _context.Products.AsQueryable();
-            if (!string.IsNullOrWhiteSpace(term))
-            {
-                query = query.Where(p => p.Name.Contains(term) || p.Id.ToString() == term);
-            }
-            if (categoryId.HasValue)
-            {
-                query = query.Where(p => p.CategoryId == categoryId.Value);
-            }
-            return await query
-                .Select(p => new ProductSearchResult
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    DisplayText = $"{p.Name} (ID: {p.Id})",
-                    CategoryId = p.CategoryId
-                })
-                .Take(20)
-                .ToListAsync();
         }
     }
 }
