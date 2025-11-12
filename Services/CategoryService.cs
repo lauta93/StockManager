@@ -101,7 +101,7 @@ namespace StockManager.Services
         {
             if (currentStock < 0)
                 return "table-danger";
-            else if (currentStock < minimumStock)
+            else if (currentStock <= minimumStock)
                 return "table-warning";
             else
                 return "";
@@ -111,7 +111,7 @@ namespace StockManager.Services
         {
             if (currentStock < 0)
                 return "badge bg-danger";
-            else if (currentStock < minimumStock)
+            else if (currentStock <= minimumStock)
                 return "badge bg-warning";
             else
                 return "badge bg-success";

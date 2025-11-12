@@ -6,6 +6,8 @@
         public List<ProductSalesData> TopSellingProducts { get; set; } = new();
         //Grafico de productos con bajo stoc
         public List<LowStockProduct> LowStockProducts { get; set; } = new();
+        //Grafico precios vs cantidad vendida
+        public List<PriceVsQuantityData> PriceVsQuantity { get; set; } = new();
         //Resumen general
         public DashboardSummary Summary { get; set; } = new();
     }
@@ -30,5 +32,10 @@
         public int TotalMovements { get; set; }
         public int CriticalStockCount { get; set; }
         public int LowStockCount { get; set; }
+    }
+    public class PriceVsQuantityData
+    {
+        public decimal Price { get; set; }
+        public int QuantitySold { get; set; }
     }
 }

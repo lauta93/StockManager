@@ -17,6 +17,7 @@ namespace StockManager.Controllers
             {
                 TopSellingProducts = await _dashboardService.GetTopSellingProductsAsync(),
                 LowStockProducts = await _dashboardService.GetLowStockProductsAsync(),
+                PriceVsQuantity = await _dashboardService.GetPriceVsQuantityDataAsync(),
                 Summary = await _dashboardService.GetDashboardSummaryAsync()
             };
             return View(viewModel);

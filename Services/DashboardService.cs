@@ -97,8 +97,27 @@ namespace StockManager.Services
         {
             return await _context.Products
         .Include(p => p.StockMovements)
-        .CountAsync(p => p.StockMovements.Sum(m => m.Quantity) < p.MinimumStock &&
+        .CountAsync(p => p.StockMovements.Sum(m => m.Quantity) <= p.MinimumStock &&
                    p.StockMovements.Sum(m => m.Quantity) >= 0);//trae los productos con stock bajo pero no negativo (pedido)
+        }
+        //metodo para obtener datos de precio vs cantidad vendida
+        public async Task<List<PriceVsQuantityData>> GetPriceVsQuantityDataAsync(int topCount = 20)
+        {
+            return await _context.StockMovements
+                .Where(m => m.Quantity < 0) // Solo egresos (ventas)
+                .GroupBy(m => new {
+                    m.ProductId,
+                    m.Product.Price
+                })
+                .Select(g => new PriceVsQuantityData
+                {
+                    Price = g.Key.Price,
+                    QuantitySold = Math.Abs(g.Sum(m => m.Quantity))
+                })
+                .Where(p => p.Price > 0) // Solo productos con precio
+                .OrderByDescending(p => p.QuantitySold)
+                .Take(topCount)
+                .ToListAsync();
         }
     }
 }

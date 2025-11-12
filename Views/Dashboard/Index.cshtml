@@ -6,38 +6,47 @@
 <div class="container-fluid">
     <h1>StockBoard</h1>
     <!-- Tarjetas de Resumen -->
+    
     <div class="row mb-4">
+        <a asp-area="" asp-controller="Products" asp-action="Index" class="text-decoration-none">
         <div class="col-md-3">
             <div class="card text-white bg-primary">
-                <div class="card-body">
-                    <h5 class="card-title">@Model.Summary.TotalProducts</h5>
-                    <p class="card-text">Productos Totales</p>
+                <div class="card-body text-center">
+                        <h5 class="card-title">@Model.Summary.TotalProducts</h5>
+                        <p class="card-text">Productos</p>
                 </div>
             </div>
-        </div>        
-        <div class="col-md-3">
+        </a>
+    </div>    
+    <div class="col-md-3">
+        <a asp-area="" asp-controller="StockMovements" asp-action="Index" class="text-decoration-none">
             <div class="card text-white bg-info">
-                <div class="card-body">
+                <div class="card-body text-center">
                     <h5 class="card-title">@Model.Summary.TotalMovements</h5>
                     <p class="card-text">Movimientos</p>
                 </div>
             </div>
+        </a>
         </div>
         <div class="col-md-3">
+        <a asp-controller="Products" asp-action="Index" asp-route-showLowOnly="true" class="text-decoration-none">
             <div class="card text-white bg-warning">
-                <div class="card-body">
+            <div class="card-body text-center">
                     <h5 class="card-title">@Model.Summary.LowStockCount</h5>
-                    <p class="card-text">Prodcutos a reponer</p>
+                <p class="card-text text-nowrap">Prodcutos a reponer</p>
                 </div>
             </div>
+            </a>
         </div>
         <div class="col-md-3">
+        <a asp-controller="Products" asp-action="Index" asp-route-showNegativeOnly="true" class="text-decoration-none">
             <div class="card text-white bg-danger">
-                <div class="card-body">
+            <div class="card-body text-center">
                     <h5 class="card-title">@Model.Summary.CriticalStockCount</h5>
-                    <p class="card-text">Pedidos a entregar</p>
+                <p class="card-text text-nowrap">Pedidos a entregar</p>
                 </div>
             </div>
+        </a>
         </div>
     </div>
     <!-- Gráficos -->
@@ -61,6 +70,19 @@
                 </div>
                 <div class="card-body">
                     <canvas id="stockChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- precio vs ventas -->
+        <div class="row mt-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Relación Precios vs Ventas</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="priceQuantityChart" width="400" height="200"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -138,5 +160,78 @@
                 }
             }
         });
+        //Grafico precio vs ventas
+        var priceQuantityCtx = document.getElementById('priceQuantityChart').getContext('2d');
+        var priceQuantityChart = new Chart(priceQuantityCtx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Productos Económicos (< $2000)',
+                    data: [
+                        @Html.Raw(string.Join(", ", Model.PriceVsQuantity.Where(p => p.Price < 2000).Select(p =>
+                            $"{{x: {p.Price}, y: {p.QuantitySold}}}"
+                                        )))
+                ],
+                backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+                pointRadius: 6
+            }, {
+                label: 'Productos Medios ($2000 - $4000)',
+                data: [
+                    @Html.Raw(string.Join(", ", Model.PriceVsQuantity.Where(p => p.Price >= 2000 && p.Price < 4000).Select(p =>
+                                                $"{{x: {p.Price}, y: {p.QuantitySold}}}"
+                                        )))
+                ],
+                backgroundColor: 'rgba(255, 159, 64, 0.8)',
+                borderColor: 'rgba(255, 159, 64, 1)',
+                borderWidth: 1,
+                pointRadius: 6
+            }, {
+                label: 'Productos Caros (≥ $4000)',
+                data: [
+                    @Html.Raw(string.Join(", ", Model.PriceVsQuantity.Where(p => p.Price >= 4000).Select(p =>
+                                                $"{{x: {p.Price}, y: {p.QuantitySold}}}"
+                                        )))
+                ],
+                backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1,
+                pointRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Precio ($)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value;
+                        }
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Cantidades Vendidas'
+                    },
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Precio: $${context.parsed.x} | Ventas: ${context.parsed.y} u.`;
+                        }
+                    }
+                }
+            }
+        }
+    });
     </script>
 }

@@ -22,7 +22,8 @@ namespace StockManager.Controllers
             _productSearchService = productSearchService;
         }
         // GET: Products
-        public async Task<IActionResult> Index(string searchTerm, int? categoryId, int page = 1, int pageSize = 10)
+        public async Task<IActionResult> Index(string searchTerm, int? categoryId, int page = 1, 
+            int pageSize = 10, bool showNegativeOnly = false, bool showLowOnly = false)
         {
             var products = await _categoryService.GetAllProductViewModelsAsync();
             //Aplica filtros, trayendo todos los prod de las subcategorias
@@ -35,6 +36,16 @@ namespace StockManager.Controllers
             {
                 var termLower = searchTerm.ToLower();
                 products = products.Where(p => p.Name.ToLower().Contains(termLower) || p.Id.ToString().Contains(searchTerm)).ToList();
+            }
+            //Filtro para mostrar productos con stock bajo para el link de las tarjetas del dashboard
+            if(showLowOnly)
+            {
+                products = products.Where(p => p.CurrentStock <= p.MinimumStock && p.CurrentStock >= 0).ToList();
+            }
+            //Filtro para stock negativo
+            if (showNegativeOnly)
+            {
+                products = products.Where(p => p.CurrentStock < 0).ToList();
             }
             ViewBag.SearchTerm = searchTerm;
             ViewBag.CategoryId = categoryId;
