@@ -16,6 +16,7 @@ builder.Services.AddScoped<CategoryPathService>();
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<StockMovementService>();
 builder.Services.AddScoped<ProductSearchService>();
+builder.Services.AddScoped<DashboardService>();
 
 var app = builder.Build();
 

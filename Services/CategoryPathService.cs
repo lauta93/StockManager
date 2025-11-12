@@ -36,7 +36,7 @@ namespace StockManager.Services
             await LoadParentRecursivelyAsync(category);
             return category;
         }
-        //Tarea recursiva que carga las categorias dentro de un obj Category
+        //Tarea recursiva que carga las categorias dentro del obj Category pasado por parametro
         private async Task LoadParentRecursivelyAsync(Category category)
         {
             if (category.ParentCategoryId.HasValue && category.ParentCategory == null)
@@ -83,6 +83,27 @@ namespace StockManager.Services
                 allIds.AddRange(childIds);
             }
             return allIds.Distinct().ToList();
+        }
+        //Metodo para obtener una cantidad hardcodeada de niveles de categorias (para los graficos)
+        public async Task<string> GetShortCategoryPathAsync(int categoryId, int maxLevels = 2)
+        {
+            if (categoryId <= 0) return string.Empty;
+            var fullCategory = await LoadFullHierarchyFromDatabaseByIdAsync(categoryId);
+            return BuildShortCategoryPathString(fullCategory, maxLevels);
+        }
+        private string BuildShortCategoryPathString(Category category, int maxLevels = 2)
+        {
+            var names = new List<string>();
+            var current = category;
+            int level = 0;
+            //Recorre hacia arriba 
+            while (current != null && level < maxLevels)
+            {
+                names.Insert(0, current.Name);
+                current = current.ParentCategory;
+                level++;
+            }
+            return names.Count > 0 ? string.Join("->", names) : "Sin categoría";
         }
     }
 }

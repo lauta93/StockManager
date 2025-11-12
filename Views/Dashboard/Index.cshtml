@@ -1,0 +1,142 @@
+﻿@model StockManager.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard de Stock";
+}
+
+<div class="container-fluid">
+    <h1>StockBoard</h1>
+    <!-- Tarjetas de Resumen -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">@Model.Summary.TotalProducts</h5>
+                    <p class="card-text">Productos Totales</p>
+                </div>
+            </div>
+        </div>        
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">@Model.Summary.TotalMovements</h5>
+                    <p class="card-text">Movimientos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">@Model.Summary.LowStockCount</h5>
+                    <p class="card-text">Prodcutos a reponer</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">@Model.Summary.CriticalStockCount</h5>
+                    <p class="card-text">Pedidos a entregar</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Gráficos -->
+    <div class="row">
+        <!-- Productos Más Vendidos -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Productos Más Vendidos</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Stock Bajo -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Productos con Stock Bajo y Productos a Entregar</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="stockChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        //Grafico de ventas
+        var salesCtx = document.getElementById('salesChart').getContext('2d');
+        var salesChart = new Chart(salesCtx, {
+            type: 'bar',
+            data: {
+                labels: [
+                    @Html.Raw(string.Join(", ", Model.TopSellingProducts.Select(p => $"'{p.ProductName}\\n({p.CategoryPath})'")))
+                ],
+                datasets: [{
+                    label: 'Unidades Vendidas',
+                    data: [@string.Join(", ", Model.TopSellingProducts.Select(p => p.TotalSold))],
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 8}
+                        }
+                    },                
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        //Grafico de stock bajo
+        var stockCtx = document.getElementById('stockChart').getContext('2d');
+        var stockChart = new Chart(stockCtx, {
+            type: 'bar',
+            data: {
+                labels: [
+                    @Html.Raw(string.Join(", ", Model.LowStockProducts.Select(p => $"'{p.ProductName}\\n({p.CategoryPath})'")))
+                ],
+                datasets: [{
+                    label: 'Stock Actual',
+                    data: [@string.Join(", ", Model.LowStockProducts.Select(p => p.CurrentStock))],
+                    backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 8
+                            }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: Math.max(...[@string.Join(", ", Model.LowStockProducts.Select(p => p.CurrentStock))]) + 2,
+                        ticks: {
+                            stepSize: 1,
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}
