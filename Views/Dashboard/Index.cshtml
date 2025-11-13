@@ -5,47 +5,69 @@
 
 <div class="container-fluid">
     <h1>StockBoard</h1>
-    <!-- Tarjetas de Resumen -->    
-    <div class="row mb-4">
-        <a asp-area="" asp-controller="Products" asp-action="Index" class="text-decoration-none">
-        <div class="col-md-3">
-            <div class="card text-white bg-primary">
-                <div class="card-body text-center">
+    <!-- Tarjetas de Resumen -->
+    <div class="row mb-1">
+        <!-- Productos -->
+        <div class="col-md-2 mb-1">
+            <a asp-area="" asp-controller="Products" asp-action="Index" class="text-decoration-none">
+                <div class="card text-white bg-primary h-100">
+                    <div class="card-body text-center">
                         <h5 class="card-title">@Model.Summary.TotalProducts</h5>
                         <p class="card-text">Productos</p>
+                    </div>
                 </div>
-            </div>
-        </a>
-    </div>    
-    <div class="col-md-3">
-        <a asp-area="" asp-controller="StockMovements" asp-action="Index" class="text-decoration-none">
-            <div class="card text-white bg-verde-claro">
-                <div class="card-body text-center">
-                    <h5 class="card-title">@Model.Summary.TotalMovements</h5>
-                    <p class="card-text">Movimientos</p>
-                </div>
-            </div>
-        </a>
-        </div>
-        <div class="col-md-3">
-        <a asp-controller="Products" asp-action="Index" asp-route-showLowOnly="true" class="text-decoration-none">
-            <div class="card text-white bg-warning">
-            <div class="card-body text-center">
-                    <h5 class="card-title">@Model.Summary.LowStockCount</h5>
-                <p class="card-text text-nowrap">Prodcutos a reponer</p>
-                </div>
-            </div>
             </a>
         </div>
-        <div class="col-md-3">
-        <a asp-controller="Products" asp-action="Index" asp-route-showNegativeOnly="true" class="text-decoration-none">
-            <div class="card text-white bg-danger">
-            <div class="card-body text-center">
-                    <h5 class="card-title">@Model.Summary.CriticalStockCount</h5>
-                <p class="card-text text-nowrap">Pedidos a entregar</p>
+        <!-- Movimientos -->
+        <div class="col-md-2 mb-1">
+            <a asp-area="" asp-controller="StockMovements" asp-action="Index" class="text-decoration-none">
+                <div class="card text-white bg-verde-claro h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">@Model.Summary.TotalMovements</h5>
+                        <p class="card-text">Movimientos</p>
+                    </div>
+                </div>
+            </a>
+        </div>        
+        <!-- Productos a reponer -->
+        <div class="col-md-2 mb-1">
+            <a asp-controller="Products" asp-action="Index" asp-route-showLowOnly="true" class="text-decoration-none">
+                <div class="card text-white bg-pastel-warning h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">@Model.Summary.LowStockCount</h5>
+                        <p class="card-text">Productos a reponer</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- Pedidos a entregar -->
+        <div class="col-md-2 mb-1">
+            <a asp-controller="Products" asp-action="Index" asp-route-showNegativeOnly="true" class="text-decoration-none">
+                <div class="card text-white bg-pastel-danger h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">@Model.Summary.CriticalStockCount</h5>
+                        <p class="card-text text-nowrap">Pedidos a entregar</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- Valor total de las ventas -->
+        <div class="col-md-2 mb-1">
+            <div class="card text-white bg-pastel-orange h-100">
+                <div class="card-body text-center">
+                    <p class="text-title">@Model.Summary.TotalSales.ToString("C")</p>
+                    <p class="card-text">Total de ventas</p>
                 </div>
             </div>
-        </a>
+        </div>
+        <!-- Valor total del inventario -->
+        <div class="col-md-2 mb-1">
+            <div class="card text-white bg-pastel-orange h-100">
+                <div class="card-body text-center">
+                    <p class="text-title">@Model.Summary.StockPriceTotal.ToString("C")</p>
+                    <p class="card-text">Valor total del inventario</p>
+                </div>
+            </div>
         </div>
     </div>
     <!-- Gráficos -->

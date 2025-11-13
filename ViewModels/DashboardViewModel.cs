@@ -32,6 +32,8 @@
         public int TotalMovements { get; set; }
         public int CriticalStockCount { get; set; }
         public int LowStockCount { get; set; }
+        public decimal TotalSales { get; set; }
+        public decimal StockPriceTotal { get; set; }
     }
     public class PriceVsQuantityData
     {

@@ -83,13 +83,17 @@ namespace StockManager.Services
                 .Include(p => p.StockMovements)
                 .CountAsync(p => p.StockMovements.Sum(m => m.Quantity) < 0);
             var lowStock = await GetLowStockProductsCountAsync();
+            var salesTotal = await GetTotalSalesValueAsync();
+            var stockPriceTotal = await GetTotalStockPriceAsync();
             return new DashboardSummary
             {
                 TotalProducts = totalProducts,
                 TotalCategories = totalCategories,
                 TotalMovements = totalMovements,
                 CriticalStockCount = criticalStock,
-                LowStockCount = lowStock
+                LowStockCount = lowStock,
+                TotalSales = salesTotal,
+                StockPriceTotal = stockPriceTotal
             };
         }
         //metodo para contar los productos con stock actual menor al stock minimo
@@ -114,6 +118,34 @@ namespace StockManager.Services
         .OrderByDescending(p => p.QuantitySold)
         .Take(topCount)
         .ToListAsync();
+        }
+        //Metodo para obtener el precio total del inventario
+        public async Task<decimal> GetTotalStockPriceAsync()
+        {
+            var products = await _context.Products
+                .Include(p => p.StockMovements)
+                .ToListAsync();
+            decimal totalValue = 0;
+            foreach (var product in products)
+            {
+                var currentStock = product.StockMovements.Sum(m => m.Quantity);
+                totalValue += currentStock * product.Price;
+            }
+            return totalValue;
+        }
+        //Metodo para obtener el total vendido
+        public async Task<decimal> GetTotalSalesValueAsync()
+        {
+            var sales = await _context.StockMovements
+                .Where(m => m.Quantity < 0 && m.Note.ToLower().Trim() != "cancelado") // Solo egresos (ventas) y no cancelaciones (dado porque no se pueden eliminar los movimientos)
+                .Include(m => m.Product)
+                .ToListAsync();
+            decimal totalSalesValue = 0;
+            foreach (var sale in sales)
+            {
+                totalSalesValue += Math.Abs(sale.Quantity) * sale.Product.Price;
+            }
+            return totalSalesValue;
         }
     }
 }

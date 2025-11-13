@@ -12,18 +12,16 @@
         <p class="form-control-plaintext fw-bold fs-5">@ViewBag.ProductFullName</p>
         <input type="hidden" asp-for="ProductId" />
     </div>
-
     <div class="form-group mb-3">
         <label asp-for="Quantity" class="form-label"></label>
         <input asp-for="Quantity" class="form-control" placeholder="Ej: +10 o -5" />
         <small class="form-text text-muted">Usa valores positivos para ingreso, negativos para egreso.</small>
     </div>
-
     <div class="form-group mb-3">
         <label asp-for="Note" class="form-label"></label>
         <input asp-for="Note" class="form-control" />
+        <small class="form-text text-muted">Aclarar CANCELADO si es un egreso que no fué venta</small>
     </div>
-
     <button type="submit" class="btn btn-primary">Guardar</button>
     <a asp-controller="Products" asp-action="Index" class="btn btn-secondary">Volver</a>
 </form>
