@@ -1,38 +1,117 @@
-﻿@model IEnumerable<StockManager.ViewModels.Category>
+﻿@using StockManager.ViewModels
+@model PaginationViewModel<Category>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Categorías";
 }
 
-<h1>Categorias</h1>
-
-<p>
-    <a asp-action="Create">Agregar nueva categoría</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                Ruta Jerárquica
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
+<div class="container-fluid">
+    <h1>@ViewData["Title"]</h1>
+    <p>
+        <a asp-action="Create" class="btn btn-primary">Crear Nueva Categoría</a>
+    </p>
+    <!-- Información de paginación -->
+    <div class="row mt-2">
+        <div class="col-md-12">
+            <p class="text-muted">
+                Mostrando @((Model.PageNumber - 1) * Model.PageSize + 1) a @Math.Min(Model.PageNumber * Model.PageSize, Model.TotalItems) de @Model.TotalItems categorías
+            </p>
+        </div>
+    </div>
+    <table class="table table-striped">
+        <thead>
             <tr>
-                <td>@item.Name</td>
-                <td>@ViewBag.CategoryPaths[item.Id]</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                </td>
+                <th>@Html.DisplayNameFor(model => model.Items.First().Name)</th>
+                <th>@Html.DisplayNameFor(model => model.Items.First().ParentCategory)</th>
+                <th>Acciones</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => item.Name)</td>
+                    <td>
+                        @if (item.ParentCategoryId.HasValue)
+                        {
+                            var allPaths = ViewBag.AllCategoryPaths as Dictionary<int, string>;
+                            if (allPaths != null && allPaths.ContainsKey(item.ParentCategoryId.Value))
+                            {
+                                <span>@allPaths[item.ParentCategoryId.Value]</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">— Categoría padre —</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted">— Sin categoría padre —</span>
+                        }
+                    </td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.Id">Editar</a>
+                        <a asp-action="Details" asp-route-id="@item.Id">Detalles</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Eliminar</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <!-- SELECTOR DE CANTIDAD DE ITEMS-->
+    @if (Model.TotalItems > 10)
+    {
+        <div class="row mt-3">
+            <div class="col-md-12">
+                <form method="get" class="d-inline">
+                    <span class="me-2">Items por página:</span>
+                    @foreach (var option in Model.PageSizeOptions)
+                    {
+                        <button type="submit"
+                                name="pageSize"
+                                value="@option"
+                                class="btn @(Model.PageSize == option ? "btn-primary" : "btn-outline-primary") btn-sm me-1">
+                            @option
+                        </button>
+                    }
+                    <input type="hidden" name="page" value="1" />
+                </form>
+            </div>
+        </div>
+    }
+    <!-- Paginación Simple-->
+    @if (Model.TotalPages > 1)
+    {
+        <nav>
+            <ul class="pagination">
+                <!-- Botón Anterior -->
+                @if (Model.HasPrevious)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber - 1, pageSize = Model.PageSize })">
+                            &laquo; Anterior
+                        </a>
+                    </li>
+                }
+                <!-- Números de Página -->
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { page = i, pageSize = Model.PageSize })">
+                            @i
+                        </a>
+                    </li>
+                }
+                <!-- Botón Siguiente -->
+                @if (Model.HasNext)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber + 1, pageSize = Model.PageSize })">
+                            Siguiente &raquo;
+                        </a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>

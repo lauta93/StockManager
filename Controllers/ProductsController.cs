@@ -22,7 +22,7 @@ namespace StockManager.Controllers
             _productSearchService = productSearchService;
         }
         // GET: Products
-        public async Task<IActionResult> Index(string searchTerm, int? categoryId, int page = 1, 
+        public async Task<IActionResult> Index(string searchTerm, int? categoryId, string categorySearch, int page = 1, 
             int pageSize = 10, bool showNegativeOnly = false, bool showLowOnly = false)
         {
             var products = await _categoryService.GetAllProductViewModelsAsync();
@@ -31,6 +31,12 @@ namespace StockManager.Controllers
             {
                 var allCategoryIds = await _categoryService.GetAllSubcategoryIdsAsync(categoryId.Value);
                 products = products.Where(p => allCategoryIds.Contains(p.CategoryId)).ToList();
+            }
+            //Filtro por nombre de categoría para la busqueda
+            if (!string.IsNullOrEmpty(categorySearch))
+            {
+                var termLower = categorySearch.ToLower();
+                products = products.Where(p => p.CategoryPath.ToLower().Contains(termLower)).ToList();
             }
             if (!string.IsNullOrEmpty(searchTerm))
             {
@@ -49,6 +55,7 @@ namespace StockManager.Controllers
             }
             ViewBag.SearchTerm = searchTerm;
             ViewBag.CategoryId = categoryId;
+            ViewBag.CategorySearch = categorySearch;
             ViewBag.Categories = await _categoryService.GetCategorySelectListAsync(categoryId);
             return View(products.ToPagedList(page, pageSize));
         }

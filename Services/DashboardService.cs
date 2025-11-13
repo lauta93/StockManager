@@ -103,21 +103,17 @@ namespace StockManager.Services
         //metodo para obtener datos de precio vs cantidad vendida
         public async Task<List<PriceVsQuantityData>> GetPriceVsQuantityDataAsync(int topCount = 20)
         {
-            return await _context.StockMovements
-                .Where(m => m.Quantity < 0) // Solo egresos (ventas)
-                .GroupBy(m => new {
-                    m.ProductId,
-                    m.Product.Price
-                })
-                .Select(g => new PriceVsQuantityData
-                {
-                    Price = g.Key.Price,
-                    QuantitySold = Math.Abs(g.Sum(m => m.Quantity))
-                })
-                .Where(p => p.Price > 0) // Solo productos con precio
-                .OrderByDescending(p => p.QuantitySold)
-                .Take(topCount)
-                .ToListAsync();
+                return await _context.StockMovements
+        .Where(m => m.Quantity < 0) // Solo egresos (ventas)
+        .GroupBy(m => m.Product.Price) //Agrupa por precio
+        .Select(g => new PriceVsQuantityData
+        {
+            Price = g.Key,
+            QuantitySold = Math.Abs(g.Sum(m => m.Quantity))
+        })
+        .OrderByDescending(p => p.QuantitySold)
+        .Take(topCount)
+        .ToListAsync();
         }
     }
 }

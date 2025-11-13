@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using StockManager.Data;
-using StockManager.ViewModels;
+using StockManager.Extensions;
 using StockManager.Services;
+using StockManager.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace StockManager.Controllers
 {
@@ -25,11 +26,17 @@ namespace StockManager.Controllers
         }
 
         // GET: Categories
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
         {
-            var categories = await _context.Categories.AsNoTracking().ToListAsync();
-            ViewBag.CategoryPaths = await _categoryService.GetCategoryPathsDictionaryAsync();
-            return View(categories);
+            var categories = await _context.Categories
+                .AsNoTracking()
+                .ToListAsync();
+            // Obtener todas las rutas de categorías
+            var allCategoryPaths = await _categoryService.GetCategoryPathsDictionaryAsync();
+            ViewBag.AllCategoryPaths = allCategoryPaths;
+            ViewBag.PageSize = pageSize;
+
+            return View(categories.ToPagedList(page, pageSize));
         }
         // GET: Categories/Details/5
         public async Task<IActionResult> Details(int? id)

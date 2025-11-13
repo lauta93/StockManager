@@ -17,7 +17,7 @@
     <div class="col-md-12">
         <form method="get" class="row g-2 align-items-end">
             <!-- Buscador de Productos -->
-            <div class="col-md-6">
+            <div class="col-md-3">
                 <label class="form-label">Buscar Producto:</label>
                 <input type="text"
                        id="productSearch"
@@ -27,23 +27,22 @@
                        placeholder="Nombre del producto"
                        autocomplete="off" />
             </div>
-            <div class="col-md-4">
-                <label class="form-label">Categoría:</label>
-                <select name="categoryId" class="form-select" onchange="this.form.submit()">
-                    <option value="">Todas las categorías</option>
-                    @foreach (var category in ViewBag.Categories)
-                    {
-                        <option value="@category.Value"
-                                selected="@(category.Value == ViewBag.CategoryId?.ToString() ? "selected" : null)">
-                            @category.Text
-                        </option>
-                    }
-                </select>
+            <div class="col-md-3">
+                <label class="form-label">Buscar por Categoría:</label>
+                <input type="text"
+                       name="categorySearch"
+                       value="@ViewBag.CategorySearch"
+                       class="form-control"
+                       placeholder="Nombre de la categoría"
+                       autocomplete="off" />
             </div>
             <!-- Botones -->
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-primary w-100 mb-2">Buscar</button>
-                <a href="@Url.Action("Index")" class="btn btn-outline-secondary w-100">Limpiar</a>
+            <div class="col-md-4">
+                <label class="form-label" style="visibility: hidden;">Botones</label>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-fill">Buscar</button>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary flex-fill">Limpiar</a>
+                </div>
             </div>
         </form>
     </div>
