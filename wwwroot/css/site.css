@@ -1,31 +1,111 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #097834;
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+    color: var(--bs-secondary-color);
+    text-align: end;
 }
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+    text-align: start;
+}
+
+/* ====== COLOR PRIMARIO GENERAL ====== */
+:root {
+    --bs-primary: #097834;
+    --bs-primary-rgb: 9, 120, 52;
+    --bs-link-color: #097834;
+    --bs-link-hover-color: #075e28;
+}
+
+.btn-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+    .btn-primary:hover {
+        background-color: #075e28;
+        border-color: #075e28;
+    }
+
+a {
+    color: var(--bs-link-color);
+}
+
+    a:hover {
+        color: var(--bs-link-hover-color);
+    }
+
+/* ====== ELEMENTOS ESPECÍFICOS ====== */
+.page-link {
+    color: #097834 !important;
+    border-color: #dee2e6;
+}
+
+    .page-link:hover {
+        color: #075e28 !important;
+        background-color: #e9ecef;
+        border-color: #dee2e6;
+    }
+
+.page-item.active .page-link {
+    background-color: #097834 !important;
+    border-color: #097834 !important;
+    color: white !important;
+}
+
+.btn-outline-primary {
+    color: #097834 !important;
+    border-color: #097834 !important;
+}
+
+    .btn-outline-primary:hover {
+        background-color: #097834 !important;
+        border-color: #097834 !important;
+        color: white !important;
+    }
+
+.dropdown-item:focus, .dropdown-item:hover {
+    background-color: #097834 !important;
+    color: white !important;
+}
+
+.form-check-input:checked {
+    background-color: #097834;
+    border-color: #097834;
+}
+
+.badge.bg-primary {
+    background-color: #097834 !important;
+}
+
+.text-primary {
+    color: #097834 !important;
+}
+
+.bg-primary {
+    background-color: #097834 !important;
+}
+.bg-verde-claro {
+    background-color: #0da34e !important; 
 }

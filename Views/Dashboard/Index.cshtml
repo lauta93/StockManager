@@ -5,8 +5,7 @@
 
 <div class="container-fluid">
     <h1>StockBoard</h1>
-    <!-- Tarjetas de Resumen -->
-    
+    <!-- Tarjetas de Resumen -->    
     <div class="row mb-4">
         <a asp-area="" asp-controller="Products" asp-action="Index" class="text-decoration-none">
         <div class="col-md-3">
@@ -20,7 +19,7 @@
     </div>    
     <div class="col-md-3">
         <a asp-area="" asp-controller="StockMovements" asp-action="Index" class="text-decoration-none">
-            <div class="card text-white bg-info">
+            <div class="card text-white bg-verde-claro">
                 <div class="card-body text-center">
                     <h5 class="card-title">@Model.Summary.TotalMovements</h5>
                     <p class="card-text">Movimientos</p>
@@ -54,7 +53,7 @@
         <!-- Productos Más Vendidos -->
         <div class="col-md-6">
             <div class="card">
-                <div class="card-header">
+            <div class="card-header">
                     <h5>Productos Más Vendidos</h5>
                 </div>
                 <div class="card-body">
@@ -81,7 +80,7 @@
                         <h5>Relación Precios vs Ventas</h5>
                     </div>
                     <div class="card-body">
-                        <canvas id="priceQuantityChart" width="400" height="200"></canvas>
+                        <canvas id="priceQuantityChart" width="700" height="200"></canvas>
                     </div>
                 </div>
             </div>
@@ -103,9 +102,18 @@
                 datasets: [{
                     label: 'Unidades Vendidas',
                     data: [@string.Join(", ", Model.TopSellingProducts.Select(p => p.TotalSold))],
-                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
+                    backgroundColor: [
+                            '#097834', 
+                            '#0da34e',
+                            '#10b856',
+                            '#0b8a42', 
+                            '#075e28',
+                            '#13d465',
+                            '#086326',
+                            '#064a1e'
+                    ],
+                        borderColor: '#ffffff',
+                    borderWidth: 2
                 }]
             },
             options: {
