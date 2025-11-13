@@ -131,5 +131,22 @@ namespace StockManager.Services
         {
             return await _categoryPathService.GetAllSubcategoryIdsAsync(categoryId);
         }
+        //metodo auxiliar para el oredenamiento de columnas
+        public List<ProductViewModel> SortProducts(List<ProductViewModel> products, string sortOrder)
+        {
+            return sortOrder switch
+            {
+                "name_desc" => products.OrderByDescending(p => p.Name).ToList(),
+                "price_asc" => products.OrderBy(p => p.Price).ToList(),
+                "price_desc" => products.OrderByDescending(p => p.Price).ToList(),
+                "stock_asc" => products.OrderBy(p => p.CurrentStock).ToList(),
+                "stock_desc" => products.OrderByDescending(p => p.CurrentStock).ToList(),
+                "minstock_asc" => products.OrderBy(p => p.MinimumStock).ToList(),
+                "minstock_desc" => products.OrderByDescending(p => p.MinimumStock).ToList(),
+                "category_asc" => products.OrderBy(p => p.CategoryPath).ToList(),
+                "category_desc" => products.OrderByDescending(p => p.CategoryPath).ToList(),
+                _ => products.OrderBy(p => p.Name).ToList() // Default = name_asc
+            };
+        }
     }
 }

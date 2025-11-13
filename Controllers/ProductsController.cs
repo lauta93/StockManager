@@ -23,7 +23,7 @@ namespace StockManager.Controllers
         }
         // GET: Products
         public async Task<IActionResult> Index(string searchTerm, int? categoryId, string categorySearch, int page = 1, 
-            int pageSize = 10, bool showNegativeOnly = false, bool showLowOnly = false)
+            int pageSize = 10, bool showNegativeOnly = false, bool showLowOnly = false, string sortOrder = "name_asc")
         {
             var products = await _categoryService.GetAllProductViewModelsAsync();
             //Aplica filtros, trayendo todos los prod de las subcategorias
@@ -43,8 +43,10 @@ namespace StockManager.Controllers
                 var termLower = searchTerm.ToLower();
                 products = products.Where(p => p.Name.ToLower().Contains(termLower) || p.Id.ToString().Contains(searchTerm)).ToList();
             }
+            //aplica el ordenamiento
+            products = _categoryService.SortProducts(products, sortOrder);
             //Filtro para mostrar productos con stock bajo para el link de las tarjetas del dashboard
-            if(showLowOnly)
+            if (showLowOnly)
             {
                 products = products.Where(p => p.CurrentStock <= p.MinimumStock && p.CurrentStock >= 0).ToList();
             }
@@ -53,19 +55,20 @@ namespace StockManager.Controllers
             {
                 products = products.Where(p => p.CurrentStock < 0).ToList();
             }
+            ViewBag.Categories = await _categoryService.GetCategorySelectListAsync(categoryId);
             ViewBag.SearchTerm = searchTerm;
             ViewBag.CategoryId = categoryId;
-            ViewBag.CategorySearch = categorySearch;
-            ViewBag.Categories = await _categoryService.GetCategorySelectListAsync(categoryId);
+            ViewBag.CategorySearch = categorySearch;            
+            ViewBag.CurrentSort = sortOrder;
+            ViewBag.NameSort = sortOrder == "name_asc" ? "name_desc" : "name_asc";
+            ViewBag.PriceSort = sortOrder == "price_asc" ? "price_desc" : "price_asc";
+            ViewBag.StockSort = sortOrder == "stock_asc" ? "stock_desc" : "stock_asc";
+            ViewBag.MinStockSort = sortOrder == "minstock_asc" ? "minstock_desc" : "minstock_asc";
+            ViewBag.CategorySort = sortOrder == "category_asc" ? "category_desc" : "category_asc";
+            
             return View(products.ToPagedList(page, pageSize));
         }
-        // Endpoint para autocompletado
-        [HttpGet]
-        public async Task<JsonResult> SearchProducts(string term)
-        {
-            var results = await _productSearchService.SearchProductsAsync(term);
-            return Json(results.Select(r => new { id = r.Id, text = r.DisplayText }));
-        }
+        
         // GET: Products/Details/5
         public async Task<IActionResult> Details(int? id)
         {

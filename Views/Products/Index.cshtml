@@ -7,11 +7,9 @@
 }
 
 <h1>Productos</h1>
-
 <p>
     <a asp-action="Create" class="btn btn-primary">Agregar nuevo producto</a>
 </p>
-
 <!-- FORMULARIO DE BÚSQUEDA-->
 <div class="row mb-3">
     <div class="col-md-12">
@@ -47,6 +45,7 @@
         </form>
     </div>
 </div>
+
 <div class="col-md-12 text-start">
     <div class="text-muted">
         Mostrando @((Model.PageNumber - 1) * Model.PageSize + 1) -
@@ -54,16 +53,112 @@
         de @Model.TotalItems productos
     </div>
 </div>
+
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>Producto</th>
-            <th>Precio</th>
-            <th>Stock Actual</th>
-            <th>Stock Mínimo</th>
+            <th>
+                <a href="@Url.Action("Index", new { 
+                    sortOrder = ViewBag.NameSort,
+                    searchTerm = ViewBag.SearchTerm,
+                    categoryId = ViewBag.CategoryId,
+                    categorySearch = ViewBag.CategorySearch,
+                    page = 1,
+                    pageSize = Model.PageSize
+                })" class="text-decoration-none text-dark">
+                    Producto
+                    @if (ViewBag.CurrentSort == "name_asc")
+                    {
+                        <i class="bi bi-sort-alpha-down"></i>
+                    }
+                    else if (ViewBag.CurrentSort == "name_desc")
+                    {
+                        <i class="bi bi-sort-alpha-up"></i>
+                    }
+                </a>
+            </th>
+            <th>
+                <a href="@Url.Action("Index", new { 
+                    sortOrder = ViewBag.PriceSort,
+                    searchTerm = ViewBag.SearchTerm,
+                    categoryId = ViewBag.CategoryId,
+                    categorySearch = ViewBag.CategorySearch,
+                    page = 1,
+                    pageSize = Model.PageSize
+                })" class="text-decoration-none text-dark">
+                    Precio
+                    @if (ViewBag.CurrentSort == "price_asc")
+                    {
+                        <i class="bi bi-sort-numeric-down"></i>
+                    }
+                    else if (ViewBag.CurrentSort == "price_desc")
+                    {
+                        <i class="bi bi-sort-numeric-up"></i>
+                    }
+                </a>
+            </th>
+            <th>
+                <a href="@Url.Action("Index", new { 
+                    sortOrder = ViewBag.StockSort,
+                    searchTerm = ViewBag.SearchTerm,
+                    categoryId = ViewBag.CategoryId,
+                    categorySearch = ViewBag.CategorySearch,
+                    page = 1,
+                    pageSize = Model.PageSize
+                })" class="text-decoration-none text-dark">
+                    Stock Actual
+                    @if (ViewBag.CurrentSort == "stock_asc")
+                    {
+                        <i class="bi bi-sort-numeric-down"></i>
+                    }
+                    else if (ViewBag.CurrentSort == "stock_desc")
+                    {
+                        <i class="bi bi-sort-numeric-up"></i>
+                    }
+                </a>
+            </th>
+            <th>
+                <a href="@Url.Action("Index", new { 
+                    sortOrder = ViewBag.MinStockSort,
+                    searchTerm = ViewBag.SearchTerm,
+                    categoryId = ViewBag.CategoryId,
+                    categorySearch = ViewBag.CategorySearch,
+                    page = 1,
+                    pageSize = Model.PageSize
+                })" class="text-decoration-none text-dark">
+                    Stock Mínimo
+                    @if (ViewBag.CurrentSort == "minstock_asc")
+                    {
+                        <i class="bi bi-sort-numeric-down"></i>
+                    }
+                    else if (ViewBag.CurrentSort == "minstock_desc")
+                    {
+                        <i class="bi bi-sort-numeric-up"></i>
+                    }
+                </a>
+            </th>
             <th>Estado</th>
-            <th>Categoría</th>
-            <th></th>
+            <th>
+                <a href="@Url.Action("Index", new { 
+                    sortOrder = ViewBag.CategorySort,
+                    searchTerm = ViewBag.SearchTerm,
+                    categoryId = ViewBag.CategoryId,
+                    categorySearch = ViewBag.CategorySearch,
+                    page = 1,
+                    pageSize = Model.PageSize
+                })" class="text-decoration-none text-dark">
+                    Categoría
+                    @if (ViewBag.CurrentSort == "category_asc")
+                    {
+                        <i class="bi bi-sort-alpha-down"></i>
+                    }
+                    else if (ViewBag.CurrentSort == "category_desc")
+                    {
+                        <i class="bi bi-sort-alpha-up"></i>
+                    }
+                </a>
+            </th>
+            <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -87,16 +182,15 @@
                 <td>
                     <a asp-controller="StockMovements" asp-action="Create" asp-route-productId="@item.Id"
                        class="btn btn-sm btn-outline-primary">+ / -</a>
-                </td>
-                <td class="small">
-                    <a asp-action="Edit" asp-route-id="@item.Id">Editar</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Detalles</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Eliminar</a>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm">Editar</a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm">Detalles</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm">Eliminar</a>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
 <!-- SELECTOR DE CANTIDAD DE ITEMS CON BOTONES -->
 <div class="row mt-3">
     <div class="col-md-12">
@@ -113,10 +207,13 @@
             }
             <input type="hidden" name="searchTerm" value="@ViewBag.SearchTerm" />
             <input type="hidden" name="categoryId" value="@ViewBag.CategoryId" />
+            <input type="hidden" name="categorySearch" value="@ViewBag.CategorySearch" />
+            <input type="hidden" name="sortOrder" value="@ViewBag.CurrentSort" />
             <input type="hidden" name="page" value="1" />
         </form>
     </div>
 </div>
+
 <!-- Paginación Simple -->
 @if (Model.TotalPages > 1)
 {
@@ -126,16 +223,30 @@
             @if (Model.HasPrevious)
             {
                 <li class="page-item">
-                    <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber - 1, pageSize = Model.PageSize, searchTerm = ViewBag.SearchTerm, categoryId = ViewBag.CategoryId })">
+                    <a class="page-link" href="@Url.Action("Index", new { 
+                        page = Model.PageNumber - 1, 
+                        pageSize = Model.PageSize, 
+                        searchTerm = ViewBag.SearchTerm, 
+                        categoryId = ViewBag.CategoryId,
+                        categorySearch = ViewBag.CategorySearch,
+                        sortOrder = ViewBag.CurrentSort
+                    })">
                         &laquo; Anterior
                     </a>
                 </li>
             }
-            <!-- Números de Página -->
+            <!--Cantidad de paginas-->
             @for (int i = 1; i <= Model.TotalPages; i++)
             {
                 <li class="page-item @(i == Model.PageNumber ? "active" : "")">
-                    <a class="page-link" href="@Url.Action("Index", new { page = i, pageSize = Model.PageSize, searchTerm = ViewBag.SearchTerm, categoryId = ViewBag.CategoryId })">
+                    <a class="page-link" href="@Url.Action("Index", new { 
+                        page = i, 
+                        pageSize = Model.PageSize, 
+                        searchTerm = ViewBag.SearchTerm, 
+                        categoryId = ViewBag.CategoryId,
+                        categorySearch = ViewBag.CategorySearch,
+                        sortOrder = ViewBag.CurrentSort 
+                    })">
                         @i
                     </a>
                 </li>
@@ -144,7 +255,14 @@
             @if (Model.HasNext)
             {
                 <li class="page-item">
-                    <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber + 1, pageSize = Model.PageSize, searchTerm = ViewBag.SearchTerm, categoryId = ViewBag.CategoryId })">
+                    <a class="page-link" href="@Url.Action("Index", new { 
+                        page = Model.PageNumber + 1, 
+                        pageSize = Model.PageSize, 
+                        searchTerm = ViewBag.SearchTerm, 
+                        categoryId = ViewBag.CategoryId,
+                        categorySearch = ViewBag.CategorySearch,
+                        sortOrder = ViewBag.CurrentSort 
+                    })">
                         Siguiente &raquo;
                     </a>
                 </li>
@@ -153,6 +271,8 @@
     </nav>
 }
 @section Scripts {
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">    
     <script>
         $(document).ready(function() {
             // Solo permitir búsqueda con Enter
