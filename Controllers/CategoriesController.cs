@@ -117,7 +117,8 @@ namespace StockManager.Controllers
             if (id == null)
                 return NotFound();
             var category = await _context.Categories
-                .FirstOrDefaultAsync(m => m.Id == id);
+            .Include(c => c.SubCategories) //carga las subcategorías para mostrar o no la posibilidad de eliminar
+            .FirstOrDefaultAsync(c => c.Id == id);
             if (category == null)
                 return NotFound();
             ViewBag.CategoryPath = await _categoryPathService.GetCategoryPathAsync(category);
@@ -129,7 +130,7 @@ namespace StockManager.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var category = await _context.Categories.FindAsync(id);
-            if (category != null)
+            if (category != null && category.SubCategories == null)//Filtro para no eliminar categorias que son padre
             {
                 _context.Categories.Remove(category);
             }

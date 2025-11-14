@@ -5,7 +5,15 @@
 }
 
 <h1>Eliminar</h1>
+@if(Model.SubCategories != null && Model.SubCategories.Any())
+{
+    <div class="alert alert-warning" role="alert">
+        <strong>Advertencia:</strong> Esta categoría tiene subcategorías asociadas. No es posible eliminarla.
 
+        <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
+    </div>
+} 
+else {
 <h3>¿Estás seguro de que deseas eliminar esta categoría?</h3>
 
 <div>
@@ -26,3 +34,4 @@
         <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
     </form>
 </div>
+}
