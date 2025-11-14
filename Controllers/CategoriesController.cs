@@ -130,11 +130,11 @@ namespace StockManager.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var category = await _context.Categories.FindAsync(id);
-            if (category != null && category.SubCategories == null)//Filtro para no eliminar categorias que son padre
+            if (category != null && category.SubCategories == null)//Filtro adicional para no eliminar categorias que son padre
             {
                 _context.Categories.Remove(category);
+                await _context.SaveChangesAsync();
             }
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
         private bool CategoryExists(int id)

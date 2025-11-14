@@ -15,19 +15,16 @@
 } 
 else {
 <h3>¿Estás seguro de que deseas eliminar esta categoría?</h3>
-
+<strong>¡Si eliminas una categoría se eliminan también los productos asociados a la misma!</strong>
 <div>
     <h4>Categoría</h4>
     <hr />
-
     <dl class="row">
         <dt class="col-sm-3">Nombre</dt>
         <dd class="col-sm-9">@Html.DisplayFor(model => model.Name)</dd>
-
         <dt class="col-sm-3">Ruta jerárquica</dt>
         <dd class="col-sm-9">@ViewBag.CategoryPath</dd>
     </dl>
-
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
         <input type="submit" value="Eliminar" class="btn btn-danger" /> |
