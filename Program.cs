@@ -5,8 +5,11 @@ using StockManager.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 //Crea la conexion a la base de datos SQLite
+//builder.Services.AddDbContext<AppDbContext>(options =>
+//options.UseSqlite("Data Source = StockDB.db"));
+var dbPath = Path.Combine(builder.Environment.ContentRootPath, "StockDB.db");
 builder.Services.AddDbContext<AppDbContext>(options =>
-options.UseSqlite("Data Source = StockDB.db"));
+    options.UseSqlite($"Data Source={dbPath}"));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -27,18 +30,11 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 app.UseRouting();
-
 app.UseAuthorization();
-
-app.MapStaticAssets();
-
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Dashboard}/{action=Index}/{id?}")
-    .WithStaticAssets();
-
-
+    pattern: "{controller=Dashboard}/{action=Index}/{id?}");
 app.Run();
