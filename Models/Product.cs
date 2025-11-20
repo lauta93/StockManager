@@ -19,7 +19,6 @@ namespace StockManager.ViewModels
         public Category? Category { get; set; }
         //Crea la relacion con los movimientos de stock (1:N), un producto puede tener muchos movimientos de stock
         public ICollection<StockMovement> StockMovements { get; set; } = new List<StockMovement>();
-
         //Calcula el stock actual en base a los movimientos de stock
         [NotMapped]
         [Display(Name = "Stock actual")]

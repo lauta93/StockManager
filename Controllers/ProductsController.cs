@@ -23,7 +23,7 @@ namespace StockManager.Controllers
         }
         // GET: Products
         public async Task<IActionResult> Index(string searchTerm, int? categoryId, string categorySearch, int page = 1, 
-            int pageSize = 10, bool showNegativeOnly = false, bool showLowOnly = false, string sortOrder = "name_asc")
+            int pageSize = 20, bool showNegativeOnly = false, bool showLowOnly = false, string sortOrder = "name_asc")
         {
             var products = await _categoryService.GetAllProductViewModelsAsync();
             //Aplica filtros, trayendo todos los prod de las subcategorias

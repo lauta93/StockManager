@@ -6,7 +6,6 @@
         public int Id { get; set; }
         [Display(Name = "Nombre")]
         public string Name { get; set; } = string.Empty;
-
         //Clave foranea de la categoria padre        
         public int? ParentCategoryId { get; set; }
         //Crea la relacion de auto referencia
@@ -16,7 +15,5 @@
         public ICollection<Category> SubCategories { get; set; } = new List<Category>();
         //Crea la relacion con los productos (1:N), una categoria puede tener muchos productos
         public ICollection<Product> Products { get; set; } = new List<Product>();
-
-
     }
 }

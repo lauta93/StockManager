@@ -33,13 +33,6 @@ public class StockMovementsController : Controller
         ViewBag.ProductSearch = productSearch;
         return View(pagedMovements);
     }
-    // Endpoint para autocompletado
-    [HttpGet]
-    public async Task<JsonResult> SearchProducts(string term)
-    {
-        var results = await _productSearchService.SearchProductsAsync(term);
-        return Json(results.Select(r => new { id = r.Id, text = r.DisplayText }));
-    }
     // GET: StockMovements/Create
     public async Task<IActionResult> Create(int productId)
     {

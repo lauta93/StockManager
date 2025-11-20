@@ -26,7 +26,7 @@ namespace StockManager.Controllers
         }
 
         // GET: Categories
-        public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 20)
         {
             var categories = await _context.Categories
                 .AsNoTracking()

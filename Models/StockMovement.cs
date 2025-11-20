@@ -10,7 +10,7 @@ namespace StockManager.ViewModels
         [Required]
         [Display(Name = "Producto")]
         public int ProductId { get; set; }
-
+        
         public Product? Product { get; set; }
 
         [Required]
